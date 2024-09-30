@@ -4,7 +4,13 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 ## Get started
 
+![simulator_screenshot_04EB441A-CA4C-4B44-8FE3-A16C20A95015](https://github.com/user-attachments/assets/0e4c3a7f-e8b3-47a6-8e40-9c6040822744)
+
+
 1. Install dependencies
+
+
+![simulator_screenshot_AECC1BC9-50C3-4B24-8441-839B573D105A](https://github.com/user-attachments/assets/49664970-ea58-428c-a322-46e420dea5fe)
 
    ```bash
    npm install
