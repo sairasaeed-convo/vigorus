@@ -12,26 +12,22 @@ import {
   Dimensions,
   PixelRatio,
 } from "react-native";
+
+
 import { Ionicons } from "@expo/vector-icons";
+import { insertDataToDatabase } from "@/database/database";
+
 
 const { width: screenWidth } = Dimensions.get("window");
 
-const LOCAL_DB = [
-  {
-    id: "1",
-    imageByteArray: "https://imgur.com/P0IJ1mD.png",
-    bodyParName: "Chest",
-    bodyPartType: "Upper Body",
-    risk: "Risk: Normal",
-  },
-  {
-    id: "2",
-    imageByteArray: "https://imgur.com/P0IJ1mD.png",
-    bodyParName: "Left Hand",
-    bodyPartType: "Lower Body ",
-    risk: "Risk: High",
-  },
-];
+const scannedData: ScannedData[] = LOCAL_DB.map((item) => ({
+  id: item.id,
+  imageByteArray: item.imageByteArray,
+  bodyParName: item.bodyParName,
+  bodyPartType: item.bodyPartType,
+  risk: item.risk,
+}));
+
 
 const BodyParts = [
   { name: "Head", info: "Info", type: "UpperBody" },
@@ -71,11 +67,11 @@ const handleEmpty = () => {
 };
 
 export default function HomeScreen() {
-  const [showRecents, setShowRecents] = useState(LOCAL_DB.length > 0);
+  const [showRecents, setShowRecents] = useState(scannedData.length > 0);
 
   useEffect(() => {
-    setShowRecents(LOCAL_DB.length > 0);
-  }, [LOCAL_DB]);
+    setShowRecents(scannedData.length > 0);
+  }, [scannedData]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -118,7 +114,7 @@ export default function HomeScreen() {
             <Text style={styles.sectionSubtitle}>Recents</Text>
             <View style={styles.regions}>
               <FlatList
-                data={LOCAL_DB}
+                data={scannedData}
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => item.id}
                 horizontal={true} // Enable horizontal scrolling
@@ -136,7 +132,7 @@ export default function HomeScreen() {
                       <Text>{item.bodyParName}</Text>
 
                       <Text style={styles.savedDataRiskTextStyle}>
-                        {item.risk}
+                        {"Risk: "+item.risk}
                       </Text>
                     </View>
                   </View>
