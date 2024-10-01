@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 export default function SkinCheckScreen({ navigation }: any) {
   const handleStartCheck = () => {
     // navigation.navigate("StartSkinCheck");
+    //  fff
   };
 
   return (
