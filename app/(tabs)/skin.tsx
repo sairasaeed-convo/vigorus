@@ -9,9 +9,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function SkinCheckScreen({ navigation }) {
+export default function SkinCheckScreen({ navigation }: any) {
   const handleStartCheck = () => {
-    navigation.navigate("StartSkinCheck");
+    // navigation.navigate("StartSkinCheck");
   };
 
   return (
