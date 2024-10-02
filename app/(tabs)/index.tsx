@@ -55,33 +55,14 @@ const getImageUrlForBodyPart = (bodyPartName: String) => {
   return "https://i.imgur.com/W7b2lXE.png"; // Default image URL if no mapping found
 };
 
-// const [scannedData, setScannedData] = useState<ScannedData[]>([]); // Initialize with an empty array
-// const [isLoading, setIsLoading] = useState(true);
-// const [showRecents, setShowRecents] = useState(false); // Initially hide Recents
-
-const scannedData: ScannedData[] = LOCAL_DB.map((item) => ({
-  id: item.id,
-  imageByteArray: item.imageByteArray,
-  bodyPartName: item.bodyPartName,
-  bodyPartType: item.bodyPartType,
-  risk: item.risk,
-}));
-
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function HomeScreen() {
   const [scannedData, setScannedData] = useState<ScannedData[]>([]); // Initialize with an empty array
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const db = await connectToDatabase();
-
-        // if(getdatafrom sqlite )
-        // [] if empty response then use local array you have defined already
-        
-        // 1. Insert data from LOCAL_DB if not already present
         // await Promise.all(
         //   LOCAL_DB.map(async (item) => {
         //     await insertScannedData({

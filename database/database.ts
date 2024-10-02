@@ -56,8 +56,8 @@ export const insertScannedData = async (data: ScannedData) => {
     const db = await connectToDatabase();
     if (db) {
       const insertScannedData = await db.prepareAsync(sqlInsertQueryScannedData);
-    const existingData = await getScannedDataFromDataBase();
-    const dataExists = existingData.some((item) => item.id === data.id);
+      const existingData = await getScannedDataFromDataBase();
+      const dataExists = existingData.some((item) => item === data);
 
       if (!dataExists) {
         let result = await insertScannedData.executeAsync([
