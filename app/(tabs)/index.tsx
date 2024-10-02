@@ -16,6 +16,7 @@ import {
 
 import { Ionicons } from "@expo/vector-icons";
 import {
+  connectToDatabase,
   insertScannedData,
   getScannedDataFromDataBase,
 } from "@/database/database";
@@ -58,13 +59,13 @@ const getImageUrlForBodyPart = (bodyPartName: String) => {
 // const [isLoading, setIsLoading] = useState(true);
 // const [showRecents, setShowRecents] = useState(false); // Initially hide Recents
 
-// const scannedData: ScannedData[] = LOCAL_DB.map((item) => ({
-//   id: item.id,
-//   imageByteArray: item.imageByteArray,
-//   bodyPartName: item.bodyPartName,
-//   bodyPartType: item.bodyPartType,
-//   risk: item.risk,
-// }));
+const scannedData: ScannedData[] = LOCAL_DB.map((item) => ({
+  id: item.id,
+  imageByteArray: item.imageByteArray,
+  bodyPartName: item.bodyPartName,
+  bodyPartType: item.bodyPartType,
+  risk: item.risk,
+}));
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -75,21 +76,23 @@ export default function HomeScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // const db = await connectToDatabase();
+
         // if(getdatafrom sqlite )
         // [] if empty response then use local array you have defined already
         
         // 1. Insert data from LOCAL_DB if not already present
-        await Promise.all(
-          LOCAL_DB.map(async (item) => {
-            await insertScannedData({
-              id: -1,
-              imageByteArray: item.imageByteArray,
-              bodyPartName: item.bodyPartName,
-              bodyPartType: item.bodyPartType,
-              risk: item.risk,
-            });
-          })
-        );
+        // await Promise.all(
+        //   LOCAL_DB.map(async (item) => {
+        //     await insertScannedData({
+        //       id: -1,
+        //       imageByteArray: item.imageByteArray,
+        //       bodyPartName: item.bodyPartName,
+        //       bodyPartType: item.bodyPartType,
+        //       risk: item.risk,
+        //     });
+        //   })
+        // );
 
         // 2. Retrieve data from the database
         const data = await getScannedDataFromDataBase();
