@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 interface CommonFloatingButtonProps {
   iconName: string;
   onPress: () => void;
-  backgroundColor: string; // Define backgroundColor as a string
+  backgroundColor: string;
   iconColor: string;
   size?: number;
 }

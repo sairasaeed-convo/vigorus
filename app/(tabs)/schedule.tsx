@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CommonFloatingButton from "@/common/CommonFloatingButton";
+import { ThemedText } from "@/components/ThemedText";
 
 export default function Schedule() {
   // Notification permission
@@ -51,13 +52,15 @@ export default function Schedule() {
     <SafeAreaView style={styles.container}>
       {permissionGranted ? (
         <View style={styles.container}>
-          <Text style={styles.sectionTopbarTitle}>Notification Schedules</Text>
+          <ThemedText style={styles.sectionTopbarTitle}>
+            Notification Schedules
+          </ThemedText>
           <View style={styles.notificationsContainerStyle}>
             <Ionicons name="calendar" size={120} color="gray"></Ionicons>
-            <Text style={styles.sectionTitle}>No Schedules</Text>
-            <Text style={styles.sectionSubtitle}>
+            <ThemedText style={styles.sectionTitle}>No Schedules</ThemedText>
+            <ThemedText style={styles.sectionSubtitle}>
               Tap the + button to get started
-            </Text>
+            </ThemedText>
 
             <View style={styles.floatingButton}>
               <CommonFloatingButton
@@ -69,12 +72,12 @@ export default function Schedule() {
                 iconColor="white"
                 size={64}
               />
-              <Text style={styles.spaceBetweenFloatingButtons}></Text>
+              <ThemedText
+                style={styles.spaceBetweenFloatingButtons}
+              ></ThemedText>
               <CommonFloatingButton
                 iconName="add"
-                onPress={() => {
-                  console.log("Floating button pressed!");
-                }}
+                onPress={() => {}}
                 backgroundColor="teal"
                 iconColor="white"
                 size={64}
@@ -90,7 +93,9 @@ export default function Schedule() {
               style={styles.button}
               onPress={requestNotificationPermission}
             >
-              <Text style={styles.buttonText}>Enable Notifications</Text>
+              <ThemedText style={styles.buttonText}>
+                Enable Notifications
+              </ThemedText>
             </TouchableOpacity>
           </View>
         </>
