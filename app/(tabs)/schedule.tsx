@@ -5,16 +5,20 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
 import { SafeAreaView } from "react-native-safe-area-context";
-import CommonFloatingButton from "@/common/CommonFloatingButton";
+
 import { ThemedText } from "@/components/ThemedText";
+import CommonFloatingButton from "@/components/common/CommonFloatingButton";
+import ScheduleModal from "@/components/modals/schedule_modal";
 
 export default function Schedule() {
   // Notification permission
   const [permissionGranted, setPermissionGranted] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const checkNotificationPermission = async () => {
@@ -77,7 +81,9 @@ export default function Schedule() {
               ></ThemedText>
               <CommonFloatingButton
                 iconName="add"
-                onPress={() => {}}
+                onPress={() => {
+                  setModalVisible(true);
+                }}
                 backgroundColor="teal"
                 iconColor="white"
                 size={64}
@@ -91,8 +97,7 @@ export default function Schedule() {
             <Ionicons name="notifications" size={120} color="gray" />
             <TouchableOpacity
               style={styles.button}
-              onPress={requestNotificationPermission}
-            >
+              onPress={requestNotificationPermission}>
               <ThemedText style={styles.buttonText}>
                 Enable Notifications
               </ThemedText>
@@ -100,6 +105,10 @@ export default function Schedule() {
           </View>
         </>
       )}
+      <ScheduleModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
