@@ -1,34 +1,70 @@
 import * as SQLite from "expo-sqlite";
+import { LOCAL_DB, ScannedData } from "@/interface/ScannedData";
 
+
+// Database table and attribute name
 const dbName = "SkinCheckApp.db";
 const TableScannedData = "scanned_data";
+ 
+// Table Creation Queries
+const sqlCreateScannedDataTable = `
+    PRAGMA journal_mode = WAL;
+    CREATE TABLE IF NOT EXISTS ${TableScannedData} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        imageByteArray TEXT, 
+        bodyPartName TEXT, 
+        bodyPartType TEXT, 
+        risk TEXT
+    );
+`;
+
+// Database queries
+const sqlInsertQueryScannedData = "INSERT INTO " + TableScannedData + " (id, imageByteArray, bodyPartName, bodyPartType, risk) VALUES (?, ?, ?, ?, ?)";
+const sqlRetrievalScannedData = "SELECT * FROM " + TableScannedData
+
 
 // Create database
-const openDatabaseAsync = async () => {
-  const db = SQLite.openDatabaseSync(dbName);
+const connectToDatabase = async () => {
+  const db = await SQLite.openDatabaseAsync(dbName);
+  await createTables(db)
   return db;
 };
 
-// Insert Scanned data
-export const insertDataToDatabase = async (data: ScannedData) => {
-  const db = await openDatabaseAsync();
+// Tables Creation
+export const createTables = async (db: SQLite.SQLiteDatabase) => {
+  await db.execAsync(sqlCreateScannedDataTable);
+}
 
-  const insertScannedData = await db.prepareAsync(
-    "INSERT INTO saved_data (imageByteArray, bodyParName, bodyPartType, risk) VALUES (?, ?, ?, ?)"
-  );
+
+// Insert Scanned data
+export const insertScannedData = async (data: ScannedData) => {
+  
+  const db = await connectToDatabase();
+
+  const insertScannedData = await db.prepareAsync(sqlInsertQueryScannedData);
 
   try {
+  // const existingData = await getScannedDataFromDataBase();
+  // const dataExists = existingData.some((item) => item.id === data.id);
+
+  // if (!dataExists) {
+
     let result = await insertScannedData.executeAsync({
       $imageByteArray: data.imageByteArray,
-      $bodyParName: "",
-      $bodyPartType: "",
-      $risk: "",
+      $bodyPartName: data.bodyPartName,
+      $bodyPartType: data.bodyPartType,
+      $risk: data.risk,
     });
     console.log(
       "Data inserted successfully ",
       result.lastInsertRowId,
       result.changes
     );
+  // }else{
+  //   console.log(
+  //     "Data already present"
+  //   );
+  // }
   } catch (error) {
     console.error("Error inserting data:", error);
   } finally {
@@ -37,33 +73,29 @@ export const insertDataToDatabase = async (data: ScannedData) => {
 };
 
 // Get Scanned data
-export const getScannedDataFromDataBase = async (data: any) => {
-  const db = await openDatabaseAsync();
+export const getScannedDataFromDataBase = async (): Promise<ScannedData[]> => {
+  const db = await connectToDatabase();
 
-  const scannedDataFromDatabase = await db.prepareAsync(
-    "SELECT * FROM scanned_data"
-  );
+  const scannedDataFromDatabase = await db.prepareAsync(sqlRetrievalScannedData);
 
   try {
     const result = await scannedDataFromDatabase.executeAsync<{
       id: string;
       imageByteArray: string;
-      bodyParName: string;
+      bodyPartName: string;
       bodyPartType: string;
       risk: string;
-    }>({}); // Empty object for parameters, as we're selecting all rows
+    }>({});
 
     const allRows = await result.getAllAsync();
-    for (const row of allRows) {
-      console.log(
-        row.id,
-        row.imageByteArray,
-        row.bodyParName,
-        row.bodyPartType,
-        row.risk
-      );
-    }
+
+    // Ensure allRows is always an array, returning [] if null or undefined
+    return Array.isArray(allRows) ? allRows as ScannedData[] : [];
+  } catch (error) {
+    console.error("Error fetching data from the database:", error);
+    return [];
   } finally {
     await scannedDataFromDatabase.finalizeAsync();
   }
 };
+

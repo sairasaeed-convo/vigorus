@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,23 +11,15 @@ import {
   Platform,
   Dimensions,
   PixelRatio,
+  ActivityIndicator,
 } from "react-native";
 
-
 import { Ionicons } from "@expo/vector-icons";
-import { insertDataToDatabase } from "@/database/database";
-
-
-const { width: screenWidth } = Dimensions.get("window");
-
-const scannedData: ScannedData[] = LOCAL_DB.map((item) => ({
-  id: item.id,
-  imageByteArray: item.imageByteArray,
-  bodyParName: item.bodyParName,
-  bodyPartType: item.bodyPartType,
-  risk: item.risk,
-}));
-
+import {
+  insertScannedData,
+  getScannedDataFromDataBase,
+} from "@/database/database";
+import { LOCAL_DB, ScannedData } from "@/interface/ScannedData";
 
 const BodyParts = [
   { name: "Head", info: "Info", type: "UpperBody" },
@@ -62,16 +54,57 @@ const getImageUrlForBodyPart = (bodyPartName: String) => {
   return "https://i.imgur.com/W7b2lXE.png"; // Default image URL if no mapping found
 };
 
-const handleEmpty = () => {
-  return <Text style={styles.sectionSubtitle}>Nothing Scanned yet!</Text>;
-};
+// const [scannedData, setScannedData] = useState<ScannedData[]>([]); // Initialize with an empty array
+// const [isLoading, setIsLoading] = useState(true);
+// const [showRecents, setShowRecents] = useState(false); // Initially hide Recents
+
+// const scannedData: ScannedData[] = LOCAL_DB.map((item) => ({
+//   id: item.id,
+//   imageByteArray: item.imageByteArray,
+//   bodyPartName: item.bodyPartName,
+//   bodyPartType: item.bodyPartType,
+//   risk: item.risk,
+// }));
+
+const { width: screenWidth } = Dimensions.get("window");
 
 export default function HomeScreen() {
-  const [showRecents, setShowRecents] = useState(scannedData.length > 0);
+  const [scannedData, setScannedData] = useState<ScannedData[]>([]); // Initialize with an empty array
+
 
   useEffect(() => {
-    setShowRecents(scannedData.length > 0);
-  }, [scannedData]);
+    const fetchData = async () => {
+      try {
+        // if(getdatafrom sqlite )
+        // [] if empty response then use local array you have defined already
+        
+        // 1. Insert data from LOCAL_DB if not already present
+        await Promise.all(
+          LOCAL_DB.map(async (item) => {
+            await insertScannedData({
+              id: -1,
+              imageByteArray: item.imageByteArray,
+              bodyPartName: item.bodyPartName,
+              bodyPartType: item.bodyPartType,
+              risk: item.risk,
+            });
+          })
+        );
+
+        // 2. Retrieve data from the database
+        const data = await getScannedDataFromDataBase();
+        setScannedData(data); // Set scannedData with the actual data
+      } catch (error) {
+        console.error("Error inserting or retrieving data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleEmpty = () => {
+    return <Text style={styles.sectionSubtitle}>Nothing Scanned yet!</Text>;
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -108,15 +141,14 @@ export default function HomeScreen() {
 
         {/* Stay up to date section */}
         <Text style={styles.sectionTitle}>Stay up to date</Text>
-
-        {showRecents && (
+        {scannedData.length > 0 ? ( // Check if scannedData has any items
           <>
             <Text style={styles.sectionSubtitle}>Recents</Text>
             <View style={styles.regions}>
               <FlatList
                 data={scannedData}
                 showsHorizontalScrollIndicator={false}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item.bodyPartName}
                 horizontal={true} // Enable horizontal scrolling
                 ListEmptyComponent={handleEmpty}
                 renderItem={({ item }) => (
@@ -129,17 +161,19 @@ export default function HomeScreen() {
                       <Text style={styles.sectionTitle}>
                         {item.bodyPartType}
                       </Text>
-                      <Text>{item.bodyParName}</Text>
+                      <Text>{item.bodyPartName}</Text>
 
                       <Text style={styles.savedDataRiskTextStyle}>
-                        {"Risk: "+item.risk}
+                        {"Risk: " + item.risk}
                       </Text>
                     </View>
                   </View>
                 )}
-              ></FlatList>
+              />
             </View>
           </>
+        ) : (
+          handleEmpty() // Call handleEmpty when there's no data
         )}
 
         <Text style={styles.sectionSubtitle}>Regions to update</Text>
