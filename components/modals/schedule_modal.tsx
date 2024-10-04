@@ -242,7 +242,7 @@ const ScheduleModal = ({ visible, onClose }: ScheduleModalProps) => {
                         opacity: 0.7,
                       }}
                     ></View>
-                      <View style={{ height: 18 }} />
+                    <View style={{ height: 18 }} />
                     <ThemedText style={styles.sectionTitleNoMargin}>
                       Which Day?
                     </ThemedText>
@@ -363,7 +363,20 @@ const styles = StyleSheet.create({
       height: 1,
     },
   },
- 
+  sectionTitle: {
+    padding: 12,
+    marginHorizontal: 12,
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "black",
+  },
+  sectionSubtitle: {
+    color: "gray",
+    marginHorizontal: 18,
+    marginVertical: 3,
+    paddingHorizontal: 12,
+    fontSize: 12,
+  },
   sectionTitleNoMargin: {
     padding: 3,
     marginHorizontal: 3,
