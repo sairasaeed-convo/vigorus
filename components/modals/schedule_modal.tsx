@@ -363,20 +363,7 @@ const styles = StyleSheet.create({
       height: 1,
     },
   },
-  sectionTitle: {
-    padding: 12,
-    marginHorizontal: 12,
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "black",
-  },
-  sectionSubtitle: {
-    color: "gray",
-    marginHorizontal: 18,
-    marginVertical: 3,
-    paddingHorizontal: 12,
-    fontSize: 12,
-  },
+ 
   sectionTitleNoMargin: {
     padding: 3,
     marginHorizontal: 3,

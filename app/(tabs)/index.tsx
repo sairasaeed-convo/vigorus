@@ -21,6 +21,7 @@ import {
   getScannedDataFromDataBase,
 } from "@/database/database";
 import { LOCAL_DB, ScannedData } from "@/interface/ScannedData";
+import ProfileScreenModal from "@/components/modals/ProfileScreenModal";
 
 const BodyParts = [
   { name: "Head", info: "Info", type: "UpperBody" },
@@ -59,6 +60,7 @@ const { width: screenWidth } = Dimensions.get("window");
 
 export default function HomeScreen() {
   const [scannedData, setScannedData] = useState<ScannedData[]>([]); // Initialize with an empty array
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,9 +95,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <Ionicons name="person-circle-outline" size={28} color="teal" />
-      </View>
+      <TouchableOpacity
+        style={styles.header}
+        onPress={() => setModalVisible(true)} >
+        <Ionicons name="person-circle-outline" size={57} color="teal" />
+      </TouchableOpacity>
 
       {/* Body */}
       <ScrollView contentContainerStyle={styles.body}>
@@ -234,7 +238,14 @@ export default function HomeScreen() {
             <Text style={styles.feedbackButtonText}>Give Feedback</Text>
           </TouchableOpacity>
         </View>
+
+    
       </ScrollView>
+          {/* User Signing account Modal */}
+          <ProfileScreenModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+        />
 
       {/* Bottom Navigation */}
       {/* <View style={styles.bottomNav}>
@@ -243,7 +254,9 @@ export default function HomeScreen() {
         <Ionicons name="person-outline" size={24} color="gray" />
         <Ionicons name="calendar-outline" size={24} color="gray" />
       </View> */}
+      
     </SafeAreaView>
+    
   );
 }
 
