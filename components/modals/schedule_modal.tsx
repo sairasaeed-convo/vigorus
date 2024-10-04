@@ -1,8 +1,26 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
-import { View, Text, Modal, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Modal,
+  TouchableOpacity,
+  StyleSheet,
+  Button,
+} from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import DateTimePicker from "@react-native-community/datetimepicker";
+
+const days = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 interface ScheduleModalProps {
   visible: boolean;
@@ -12,75 +30,182 @@ interface ScheduleModalProps {
 const ScheduleModal = ({ visible, onClose }: ScheduleModalProps) => {
   const [selectedTab, setSelectedTab] = useState("Daily"); // State for selected tab
 
+  const [date, setDate] = useState(new Date());
+  const [mode, setMode] = useState<"time" | "date" | "datetime">("time");
+  const [show, setShow] = useState(false);
+
+  const onChange = (event: any, selectedDate?: Date) => {
+    if (event.type === "set") {
+      // OK button pressed
+      setShow(false);
+      const currentDate = selectedDate || date;
+      setDate(currentDate);
+    } else {
+      // Cancel button pressed or dismissed
+      setShow(false);
+    }
+  };
+  const showTimepicker = () => {
+    setShow(true);
+  };
+
+  useEffect(() => {
+    // Set default time if needed
+    const defaultTime = new Date();
+    defaultTime.setHours(10);
+    defaultTime.setMinutes(30);
+    setDate(defaultTime);
+  }, []);
+
+  const [selectedDay, setSelectedDay] = useState("");
+
+  useEffect(() => {
+    const today = new Date().getDay();
+    setSelectedDay(days[today]);
+  }, []);
+
+  const handleDayPress = (day: string) => {
+    setSelectedDay(day);
+  };
+
   return (
     <Modal animationType="slide" transparent={true} visible={visible}>
       <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={onClose}>
-              <ThemedText style={styles.cancelText}>Cancel</ThemedText>
-            </TouchableOpacity>
-            <ThemedText style={styles.headerText}>Create Schedule</ThemedText>
-            <TouchableOpacity>
-              <ThemedText style={styles.saveText}>Save</ThemedText>
-            </TouchableOpacity>
-          </View>
-        </View>
-        {/* Contents */}
-        <View>
-          {/* lesion card */}
-          <ThemedText style={styles.sectionTitle}>Lesion</ThemedText>
-          <TouchableOpacity>
-            <View style={styles.lesionCard}>
-              <View style={styles.lesionContent}>
-                <Ionicons name="warning" size={64} color="gray" />
-                <ThemedText style={styles.lesionNoneTitle}>None</ThemedText>
-              </View>
-              <Ionicons
-                style={styles.lesionNoneForwardIcon}
-                name="add"
-                size={24}
-                color="gray"
-              />
-            </View>
-          </TouchableOpacity>
-          <ThemedText style={styles.sectionSubtitle}>
-            You'll receive reminders to scan this lesion
-          </ThemedText>
-
-          {/* Spacer */}
-          <View style={{ height: 10 }} />
-
-          {/* Schedling */}
-          <ThemedText style={styles.sectionTitle}>Scheduling</ThemedText>
-          <View style={styles.schedulingCard}>
-            <Ionicons name="warning" size={180} color="gray" />
-
-            {/* Spacer */}
-            <View style={{ height: 10 }} />
-            <ThemedText style={styles.sectionTitleNoMargin}>
-              Repeat Interval
-            </ThemedText>
-            <ThemedText style={styles.sectionSubtitleNoMargin}>
-              How often would you like to be notified?
-            </ThemedText>
-            {/* Tabs */}
-            <View style={styles.tabsContainer}>
-              {["Daily", "Weekly", "Monthly"].map((tab) => (
-                <TouchableOpacity
-                  key={tab}
-                  style={[
-                    styles.tab,
-                    selectedTab === tab && styles.selectedTab,
-                  ]}
-                  onPress={() => setSelectedTab(tab)}
-                >
-                  <ThemedText style={styles.tabText}>{tab}</ThemedText>
+        <View style={{ flexGrow: 1 }}>
+          <ScrollView>
+            <View style={styles.modalView}>
+              {/* Header */}
+              <View style={styles.header}>
+                <TouchableOpacity onPress={onClose}>
+                  <ThemedText style={styles.cancelText}>Cancel</ThemedText>
                 </TouchableOpacity>
-              ))}
+                <ThemedText style={styles.headerText}>
+                  Create Schedule
+                </ThemedText>
+                <TouchableOpacity>
+                  <ThemedText style={styles.saveText}>Save</ThemedText>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+            {/* Contents */}
+            <View>
+              {/* lesion card */}
+              <ThemedText style={styles.sectionTitle}>Lesion</ThemedText>
+              <TouchableOpacity>
+                <View style={styles.lesionCard}>
+                  <View style={styles.lesionContent}>
+                    <Ionicons name="warning" size={64} color="gray" />
+                    <ThemedText style={styles.lesionNoneTitle}>None</ThemedText>
+                  </View>
+                  <Ionicons
+                    style={styles.lesionNoneForwardIcon}
+                    name="add"
+                    size={24}
+                    color="gray"
+                  />
+                </View>
+              </TouchableOpacity>
+              <ThemedText style={styles.sectionSubtitle}>
+                You'll receive reminders to scan this lesion
+              </ThemedText>
+
+              {/* Spacer */}
+              <View style={{ height: 10 }} />
+
+              {/* Schedling */}
+              <ThemedText style={styles.sectionTitle}>Scheduling</ThemedText>
+
+              <View style={styles.schedulingCard}>
+                {/* <Ionicons name="warning" size={180} color="gray" /> */}
+
+                <Button onPress={showTimepicker} title="Show time picker" />
+
+                {show && (
+                  <DateTimePicker
+                    testID="dateTimePicker"
+                    value={date}
+                    mode={mode}
+                    display="default"
+                    onChange={onChange}
+                  />
+                )}
+
+                {/* Spacer */}
+                <View style={{ height: 10 }} />
+
+                <View
+                  style={{
+                    borderBottomColor: "gray",
+                    borderBottomWidth: StyleSheet.hairlineWidth,
+                    alignSelf: "stretch",
+                    opacity: 0.7,
+                  }}
+                ></View>
+                {/* Spacer */}
+                <View style={{ height: 18 }} />
+                <ThemedText style={styles.sectionTitleNoMargin}>
+                  Repeat Interval
+                </ThemedText>
+                <ThemedText style={styles.sectionSubtitleNoMargin}>
+                  How often would you like to be notified?
+                </ThemedText>
+                {/* Tabs */}
+                <View style={styles.tabsContainer}>
+                  {["Daily", "Weekly", "Monthly"].map((tab) => (
+                    <TouchableOpacity
+                      key={tab}
+                      style={[
+                        styles.tab,
+                        selectedTab === tab && styles.selectedTab,
+                      ]}
+                      onPress={() => setSelectedTab(tab)}
+                    >
+                      <ThemedText style={styles.tabText}>{tab}</ThemedText>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                {/* Spacer */}
+                <View style={{ height: 18 }} />
+
+                {/* Week day picker  */}
+                {selectedTab === "Weekly" && (
+                  <View style={styles.container}>
+                    <View
+                      style={{
+                        borderBottomColor: "gray",
+                        borderBottomWidth: StyleSheet.hairlineWidth,
+                        alignSelf: "stretch",
+                        opacity: 0.7,
+                      }}
+                    ></View>
+                    {/* Spacer */}
+                    <View style={{ height: 18 }} />
+                    <ThemedText style={styles.sectionTitleNoMargin}>
+                      Which weekday?
+                    </ThemedText>
+                    <View style={{ height: 18 }} />
+
+                    {days.map((day) => (
+                      <TouchableOpacity
+                        key={day}
+                        onPress={() => handleDayPress(day)}
+                      >
+                        <Text
+                          style={[
+                            styles.day,
+                            selectedDay === day && styles.selectedDay,
+                          ]}
+                        >
+                          {day}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+            <View style={{ height: 18 }} />
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -176,7 +301,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginHorizontal: 12,
     fontSize: 16,
-    fontWeight: "normal",
+    fontWeight: "bold",
     color: "black",
   },
   sectionSubtitle: {
@@ -190,7 +315,7 @@ const styles = StyleSheet.create({
     padding: 3,
     marginHorizontal: 3,
     fontSize: 16,
-    fontWeight: "normal",
+    fontWeight: "bold",
     color: "black",
   },
   sectionSubtitleNoMargin: {
@@ -208,6 +333,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   tab: {
+    flexDirection: "row",
     paddingVertical: 2,
     paddingHorizontal: 35,
     borderRadius: 8,
@@ -220,6 +346,24 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 12,
+  },
+
+  container: {
+    flexDirection: "column",
+    justifyContent: "space-around",
+    padding: 10,
+    overflow: "hidden",
+  },
+  day: {
+    fontSize: 16,
+    padding: 10,
+    textAlign: "center",
+    borderBottomColor: "#eee",
+    borderBottomWidth: 1,
+  },
+  selectedDay: {
+    backgroundColor: "lightblue",
+    borderRadius: 5,
   },
 });
 

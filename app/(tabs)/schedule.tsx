@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/ThemedText";
 import CommonFloatingButton from "@/components/common/CommonFloatingButton";
 import ScheduleModal from "@/components/modals/schedule_modal";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function Schedule() {
   // Notification permission
@@ -54,61 +55,64 @@ export default function Schedule() {
   };
   return (
     <SafeAreaView style={styles.container}>
-      {permissionGranted ? (
-        <View style={styles.container}>
-          <ThemedText style={styles.sectionTopbarTitle}>
-            Notification Schedules
-          </ThemedText>
-          <View style={styles.notificationsContainerStyle}>
-            <Ionicons name="calendar" size={120} color="gray"></Ionicons>
-            <ThemedText style={styles.sectionTitle}>No Schedules</ThemedText>
-            <ThemedText style={styles.sectionSubtitle}>
-              Tap the + button to get started
+      <GestureHandlerRootView style={{ flexGrow: 1 }}>
+        {permissionGranted ? (
+          <View style={styles.container}>
+            <ThemedText style={styles.sectionTopbarTitle}>
+              Notification Schedules
             </ThemedText>
+            <View style={styles.notificationsContainerStyle}>
+              <Ionicons name="calendar" size={120} color="gray"></Ionicons>
+              <ThemedText style={styles.sectionTitle}>No Schedules</ThemedText>
+              <ThemedText style={styles.sectionSubtitle}>
+                Tap the + button to get started
+              </ThemedText>
 
-            <View style={styles.floatingButton}>
-              <CommonFloatingButton
-                iconName="pencil"
-                onPress={() => {
-                  console.log("Edit button pressed!");
-                }}
-                backgroundColor="darkgray"
-                iconColor="white"
-                size={64}
-              />
-              <ThemedText
-                style={styles.spaceBetweenFloatingButtons}
-              ></ThemedText>
-              <CommonFloatingButton
-                iconName="add"
-                onPress={() => {
-                  setModalVisible(true);
-                }}
-                backgroundColor="teal"
-                iconColor="white"
-                size={64}
-              />
+              <View style={styles.floatingButton}>
+                <CommonFloatingButton
+                  iconName="pencil"
+                  onPress={() => {
+                    console.log("Edit button pressed!");
+                  }}
+                  backgroundColor="darkgray"
+                  iconColor="white"
+                  size={64}
+                />
+                <ThemedText
+                  style={styles.spaceBetweenFloatingButtons}
+                ></ThemedText>
+                <CommonFloatingButton
+                  iconName="add"
+                  onPress={() => {
+                    setModalVisible(true);
+                  }}
+                  backgroundColor="teal"
+                  iconColor="white"
+                  size={64}
+                />
+              </View>
             </View>
           </View>
-        </View>
-      ) : (
-        <>
-          <View style={styles.notificationsContainerStyle}>
-            <Ionicons name="notifications" size={120} color="gray" />
-            <TouchableOpacity
-              style={styles.button}
-              onPress={requestNotificationPermission}>
-              <ThemedText style={styles.buttonText}>
-                Enable Notifications
-              </ThemedText>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
-      <ScheduleModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-      />
+        ) : (
+          <>
+            <View style={styles.notificationsContainerStyle}>
+              <Ionicons name="notifications" size={120} color="gray" />
+              <TouchableOpacity
+                style={styles.button}
+                onPress={requestNotificationPermission}
+              >
+                <ThemedText style={styles.buttonText}>
+                  Enable Notifications
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+        <ScheduleModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+        />
+      </GestureHandlerRootView>
     </SafeAreaView>
   );
 }
