@@ -23,7 +23,6 @@ export default function SkinCheckScreen({ navigation }: any) {
   const handleBodyPartPress = (bodyPart: BodyParts) => {
     // Handle body part click here
     console.log("Clicked body part:", bodyPart.name);
-    // Add your logic for actions based on the clicked body part
   };
 
   const [selectedTab, setSelectedTab] = useState("Full Body");
@@ -60,12 +59,15 @@ export default function SkinCheckScreen({ navigation }: any) {
       {/* Spacer */}
       <View style={{ height: 18 }} />
 
-      <ScrollView>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+      >
         <View style={styles.flexRow}>
           <View
             style={[
               styles.verticalLine,
-              { height: filteredBodyParts().length * 70 }, // Adjust the multiplier as needed
+              { height: filteredBodyParts().length * 70 },
             ]}
           >
             {filteredBodyParts().map((_, index) => (
@@ -82,7 +84,12 @@ export default function SkinCheckScreen({ navigation }: any) {
               >
                 <Image
                   source={{ uri: item.image }}
-                  style={{ width: 40, height: 40, marginRight: 8 }}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    marginEnd: 8,
+                    marginStart: 10,
+                  }}
                 />
                 <ThemedText style={styles.bodyPartText}>{item.name}</ThemedText>
               </TouchableOpacity>
@@ -90,6 +97,7 @@ export default function SkinCheckScreen({ navigation }: any) {
           />
         </View>
       </ScrollView>
+
       <TouchableOpacity style={styles.startButton} onPress={handleStartCheck}>
         <Ionicons name="play-outline" size={24} color="#fff" />
         <Text style={styles.startButtonText}>Start SkinCheck</Text>
@@ -163,6 +171,7 @@ const styles = StyleSheet.create({
   },
   bodyPart: {
     height: 69,
+    paddingStart: 12,
     flexDirection: "row",
     alignItems: "center",
   },
