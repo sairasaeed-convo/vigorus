@@ -7,6 +7,7 @@ import {
   ScrollView,
   SafeAreaView,
   Image,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ThemedText } from "@/components/ThemedText";
@@ -19,16 +20,21 @@ export default function SkinCheckScreen({ navigation }: any) {
     //  fff
   };
 
+  const handleBodyPartPress = (bodyPart: BodyParts) => {
+    // Handle body part click here
+    console.log("Clicked body part:", bodyPart.name);
+    // Add your logic for actions based on the clicked body part
+  };
+
   const [selectedTab, setSelectedTab] = useState("Full Body");
 
-  // Function to filter body parts based on the selected tab
   const filteredBodyParts = () => {
     if (selectedTab === "Upper Body") {
       return bodyPartsData.filter((part) => part.bodyType === "UpperBody");
     } else if (selectedTab === "Lower Body") {
       return bodyPartsData.filter((part) => part.bodyType === "LowerBody");
     } else {
-      return bodyPartsData; // Return all for "Full Body" or add your logic
+      return bodyPartsData;
     }
   };
 
@@ -50,34 +56,40 @@ export default function SkinCheckScreen({ navigation }: any) {
           </TouchableOpacity>
         ))}
       </View>
+
       {/* Spacer */}
       <View style={{ height: 18 }} />
-      <View style={styles.flexRow}>
-        <View
-          style={[
-            styles.verticalLine,
-            { height: filteredBodyParts().length * 70 }, // increase or decrease if the vertical line not draws correctly
-          ]}
-        >
-          {filteredBodyParts().map((_, index) => (
-            <View key={index} style={styles.dot} />
-          ))}
-        </View>
-        <View style={styles.timeline}>
-          {filteredBodyParts().map((bodyPart) => (
-            <TouchableOpacity key={bodyPart.name} style={styles.bodyPart}>
-              <Image
-                source={{ uri: bodyPart.image }}
-                style={{ width: 40, height: 40, marginRight: 8 }}
-              />
-              <ThemedText style={styles.bodyPartText}>
-                {bodyPart.name}
-              </ThemedText>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
 
+      <ScrollView>
+        <View style={styles.flexRow}>
+          <View
+            style={[
+              styles.verticalLine,
+              { height: filteredBodyParts().length * 70 }, // Adjust the multiplier as needed
+            ]}
+          >
+            {filteredBodyParts().map((_, index) => (
+              <View key={index} style={styles.dot} />
+            ))}
+          </View>
+          <FlatList
+            data={filteredBodyParts()}
+            keyExtractor={(item) => item.name}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.bodyPart}
+                onPress={() => handleBodyPartPress(item)}
+              >
+                <Image
+                  source={{ uri: item.image }}
+                  style={{ width: 40, height: 40, marginRight: 8 }}
+                />
+                <ThemedText style={styles.bodyPartText}>{item.name}</ThemedText>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      </ScrollView>
       <TouchableOpacity style={styles.startButton} onPress={handleStartCheck}>
         <Ionicons name="play-outline" size={24} color="#fff" />
         <Text style={styles.startButtonText}>Start SkinCheck</Text>
