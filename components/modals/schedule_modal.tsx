@@ -45,17 +45,43 @@ const ScheduleModal = ({ visible, onClose }: ScheduleModalProps) => {
       setShow(false);
     }
   };
+
   const showTimepicker = () => {
+    setMode("time");
     setShow(true);
   };
 
+  const showDatepicker = () => {
+    setMode("date");
+    setShow(true);
+  };
+
+  // Initial state set to current time
   useEffect(() => {
-    // Set default time if needed
-    const defaultTime = new Date();
-    defaultTime.setHours(10);
-    defaultTime.setMinutes(30);
-    setDate(defaultTime);
+    setDate(new Date());
   }, []);
+
+  const formatTime = (date: Date) => {
+    // Get hours and minutes
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    // Determine AM/PM suffix
+    const suffix = hours >= 12 ? "PM" : "AM";
+
+    // Convert to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // If hours is 0, set to 12
+
+    // Format minutes
+    const formattedMinutes = minutes.toString().padStart(2, "0");
+
+    return `${hours}:${formattedMinutes} ${suffix}`;
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString(); // Format as per your requirements
+  };
 
   const [selectedDay, setSelectedDay] = useState("");
 
@@ -118,7 +144,9 @@ const ScheduleModal = ({ visible, onClose }: ScheduleModalProps) => {
               <View style={styles.schedulingCard}>
                 {/* <Ionicons name="warning" size={180} color="gray" /> */}
 
-                <Button onPress={showTimepicker} title="Show time picker" />
+                <TouchableOpacity onPress={showTimepicker}>
+                  <ThemedText style={styles.day}>{formatTime(date)}</ThemedText>
+                </TouchableOpacity>
 
                 {show && (
                   <DateTimePicker
@@ -201,6 +229,44 @@ const ScheduleModal = ({ visible, onClose }: ScheduleModalProps) => {
                       </TouchableOpacity>
                     ))}
                   </View>
+                )}
+
+                {selectedTab === "Monthly" && (
+                  <>
+                    <View style={{ height: 10 }} />
+                    <View
+                      style={{
+                        borderBottomColor: "gray",
+                        borderBottomWidth: StyleSheet.hairlineWidth,
+                        alignSelf: "stretch",
+                        opacity: 0.7,
+                      }}
+                    ></View>
+                      <View style={{ height: 18 }} />
+                    <ThemedText style={styles.sectionTitleNoMargin}>
+                      Which Day?
+                    </ThemedText>
+                    <ThemedText style={styles.sectionSubtitleNoMargin}>
+                      Select the day on which the notification delivers.
+                    </ThemedText>
+
+                    <View style={{ height: 18 }} />
+
+                    <TouchableOpacity onPress={showDatepicker}>
+                      <ThemedText style={styles.day}>
+                        {formatDate(date)}
+                      </ThemedText>
+                    </TouchableOpacity>
+                    {show && (
+                      <DateTimePicker
+                        testID="dateTimePicker"
+                        value={date}
+                        mode={mode}
+                        display="default"
+                        onChange={onChange}
+                      />
+                    )}
+                  </>
                 )}
               </View>
             </View>
@@ -329,14 +395,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     backgroundColor: "lightgray",
-    borderRadius: 8,
+    borderRadius: 10,
     marginTop: 10,
   },
   tab: {
     flexDirection: "row",
-    paddingVertical: 2,
+    paddingVertical: 4,
     paddingHorizontal: 35,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 2,
     backgroundColor: "lightgray",
     borderColor: "lightgray",
@@ -358,8 +424,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     padding: 10,
     textAlign: "center",
-    borderBottomColor: "#eee",
-    borderBottomWidth: 1,
+    // borderBottomColor: "#eee",
+    // borderBottomWidth: 1,
   },
   selectedDay: {
     backgroundColor: "lightblue",
