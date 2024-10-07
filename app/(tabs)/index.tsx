@@ -59,8 +59,14 @@ const getImageUrlForBodyPart = (bodyPartName: String) => {
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function HomeScreen() {
+  
+  const handleScanALesionClick = () => {};
+
+
   const [scannedData, setScannedData] = useState<ScannedData[]>([]); // Initialize with an empty array
   const [modalVisible, setModalVisible] = useState(false);
+  const [caemraModalVisible, setCameraModalVisible] = useState(false);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,7 +128,7 @@ export default function HomeScreen() {
         </View>
         {/* Scan Lesion Button */}
         <View style={{ flex: 1, alignItems: "center" }}>
-          <TouchableOpacity style={styles.scanButton}>
+          <TouchableOpacity style={styles.scanButton} onPress={() => setCameraModalVisible(true)}>
             <Ionicons name="camera-outline" size={20} color="#fff" />
             <Text style={styles.scanButtonText}>Scan a Lesion</Text>
           </TouchableOpacity>
