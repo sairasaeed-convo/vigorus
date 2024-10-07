@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 18,
     fontWeight: "normal",
-    color: "black",
+    color: "teal",
   },
   saveText: {
     color: "gray",

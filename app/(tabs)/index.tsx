@@ -97,8 +97,9 @@ export default function HomeScreen() {
       {/* Header */}
       <TouchableOpacity
         style={styles.header}
-        onPress={() => setModalVisible(true)} >
-        <Ionicons name="person-circle-outline" size={57} color="teal" />
+        onPress={() => setModalVisible(true)}
+      >
+        <Ionicons name="person-circle-outline" size={47} color="teal" />
       </TouchableOpacity>
 
       {/* Body */}
@@ -238,14 +239,12 @@ export default function HomeScreen() {
             <Text style={styles.feedbackButtonText}>Give Feedback</Text>
           </TouchableOpacity>
         </View>
-
-    
       </ScrollView>
-          {/* User Signing account Modal */}
-          <ProfileScreenModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-        />
+      {/* User Signing account Modal */}
+      <ProfileScreenModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
 
       {/* Bottom Navigation */}
       {/* <View style={styles.bottomNav}>
@@ -254,9 +253,7 @@ export default function HomeScreen() {
         <Ionicons name="person-outline" size={24} color="gray" />
         <Ionicons name="calendar-outline" size={24} color="gray" />
       </View> */}
-      
     </SafeAreaView>
-    
   );
 }
 
@@ -279,7 +276,7 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   body: {
-    padding: 20,
+    padding: 10,
   },
 
   // Styling related to saved data
