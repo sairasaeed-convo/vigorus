@@ -22,6 +22,7 @@ import {
 } from "@/database/database";
 import { LOCAL_DB, ScannedData } from "@/interface/ScannedData";
 import ProfileScreenModal from "@/components/modals/ProfileScreenModal";
+import CameraModal from "@/components/modals/CameraModal";
 
 const BodyParts = [
   { name: "Head", info: "Info", type: "UpperBody" },
@@ -59,14 +60,11 @@ const getImageUrlForBodyPart = (bodyPartName: String) => {
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function HomeScreen() {
-  
   const handleScanALesionClick = () => {};
-
 
   const [scannedData, setScannedData] = useState<ScannedData[]>([]); // Initialize with an empty array
   const [modalVisible, setModalVisible] = useState(false);
   const [caemraModalVisible, setCameraModalVisible] = useState(false);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -128,7 +126,10 @@ export default function HomeScreen() {
         </View>
         {/* Scan Lesion Button */}
         <View style={{ flex: 1, alignItems: "center" }}>
-          <TouchableOpacity style={styles.scanButton} onPress={() => setCameraModalVisible(true)}>
+          <TouchableOpacity
+            style={styles.scanButton}
+            onPress={() => setCameraModalVisible(true)}
+          >
             <Ionicons name="camera-outline" size={20} color="#fff" />
             <Text style={styles.scanButtonText}>Scan a Lesion</Text>
           </TouchableOpacity>
@@ -246,19 +247,18 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
       {/* User Signing account Modal */}
       <ProfileScreenModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
       />
 
-      {/* Bottom Navigation */}
-      {/* <View style={styles.bottomNav}>
-        <Ionicons name="home" size={24} color="teal" />
-        <Ionicons name="list-outline" size={24} color="gray" />
-        <Ionicons name="person-outline" size={24} color="gray" />
-        <Ionicons name="calendar-outline" size={24} color="gray" />
-      </View> */}
+      {/* User Scan a lesion Modal */}
+      <CameraModal
+        visible={caemraModalVisible}
+        onClose={() => setCameraModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -266,7 +266,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 32,
+    paddingTop: 52,
     backgroundColor: "#fff",
   },
   header: {
