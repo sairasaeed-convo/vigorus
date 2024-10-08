@@ -1,6 +1,13 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  ForwardRefRenderFunction,
+  ForwardedRef,
+  forwardRef,
+} from "react";
 import {
   View,
   Text,
@@ -10,12 +17,34 @@ import {
   Modal,
   Dimensions,
 } from "react-native";
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  Layout,
+  LinearTransition,
+  SharedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { CameraView, FlashMode, useCameraPermissions } from "expo-camera";
 
 import * as ImagePicker from "expo-image-picker";
 
 import { StatusBar } from "expo-status-bar";
 import CommonFloatingButton from "../common/CommonFloatingButton";
+import {
+  ZOOM_TYPE,
+  Zoomable,
+  ZoomableProps,
+  ZoomableRef,
+} from "@likashefqet/react-native-image-zoom";
+
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 interface CameraModalProps {
   visible: boolean;
@@ -25,21 +54,20 @@ interface CameraModalProps {
 const { width, height } = Dimensions.get("window");
 
 const CameraModal = ({ visible, onClose }: CameraModalProps) => {
-  const handleInstructionsClick = () => {
-    onClose();
-  };
-  const handleMinZoom = () => {
-    setZoom(0.5);
-  };
-  const handleMaxZoom = () => {
-    setZoom(1);
-  };
-  const onGalleryClick = () => {
-    pickImage();
+  const [toggleIsZoomed, setIsZoomed] = useState<boolean>(false);
+  const scale = useSharedValue(1);
+  const isPinching = useSharedValue(true);
+
+  const onZoom = (zoomType?: ZOOM_TYPE) => {
+    if (!zoomType || zoomType === ZOOM_TYPE.ZOOM_IN) {
+      setIsZoomed(true);
+    }
   };
 
-  const onCaptureClick = () => {
-    // Handle capture click
+  const onAnimationEnd = (finished?: boolean) => {
+    if (finished) {
+      setIsZoomed(false);
+    }
   };
 
   const overlayWidth = 210;
@@ -61,12 +89,37 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
   }
 
   useEffect(() => {
-    (async () => {
-      if (!isPermissionGranted && visible) {
-        await requestCameraPermission();
-      }
-    })();
-  }, [isPermissionGranted]);
+    if (visible) {
+      (async () => {
+        if (!isPermissionGranted) {
+          await requestCameraPermission();
+        }
+      })();
+
+      setFlashMode("off");
+      setTorchMode(false);
+      setZoom(0);
+      setImage(null);
+      setIsCameraReady(false);
+    }
+  }, [visible, isPermissionGranted]);
+
+  const handleInstructionsClick = () => {
+    onClose();
+  };
+  const handleMinZoom = () => {
+    setZoom(0.5);
+  };
+  const handleMaxZoom = () => {
+    setZoom(1);
+  };
+  const onGalleryClick = () => {
+    pickImage();
+  };
+
+  const onCaptureClick = () => {
+    // Handle capture click
+  };
 
   if (!visible) {
     return null;
@@ -75,9 +128,9 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
+      // allowsEditing: false,
+      // aspect: [4, 3],
+      // quality: 1,
     });
 
     if (!result.canceled) {
@@ -138,15 +191,77 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
                       { width: overlayWidth, height: overlayHeight },
                     ]}
                   >
-                    {image && (
-                      <Image
-                        source={{ uri: image }}
-                        style={[
-                          styles.imagePlacer,
-                          { width: overlayWidth, height: overlayHeight },
-                        ]}
-                      />
-                    )}
+                    <GestureHandlerRootView
+                      style={styles.frameAndZoomContainer}
+                    >
+                      <Zoomable
+                        // ref={ref}
+                        entering={FadeIn}
+                        exiting={FadeOut}
+                        layout={LinearTransition}
+                        minScale={1}
+                        maxScale={5}
+                        scale={scale}
+                        onInteractionStart={() => {
+                          console.log("onInteractionStart");
+                          onZoom();
+                        }}
+                        isPanEnabled={true}
+                        isPinchEnabled={true}
+                        isSingleTapEnabled={true}
+                        onInteractionEnd={() => console.log("onInteractionEnd")}
+                        // Pan events
+                        onPanStart={() => {
+                          console.log("onPanStart");
+                          if (!isPinching.value) {
+                            isPinching.value = false;
+                          }
+                        }}
+                        onPanEnd={() => {
+                          console.log("onPanEnd");
+                          if (!isPinching.value) {
+                            isPinching.value = false;
+                          }
+                        }}
+                        // Pinch events
+                        onPinchStart={() => {
+                          console.log("onPinchStart");
+                          isPinching.value = false;
+                        }}
+                        onPinchEnd={() => {
+                          console.log("onPinchEnd");
+                          isPinching.value = true;
+                        }}
+                        onProgrammaticZoom={(zoomType) => {
+                          console.log("onZoom", zoomType);
+                          onZoom(zoomType);
+                        }}
+                        onResetAnimationEnd={(finished, values) => {
+                          console.log("onResetAnimationEnd", finished);
+                          console.log(
+                            "lastScaleValue:",
+                            values?.SCALE.lastValue
+                          );
+
+                          if (isPinching.value && values?.SCALE?.lastValue) {
+                            scale.value = withTiming(values.SCALE.lastValue);
+                            // onAnimationEnd(finished);
+                          }
+                        }}
+                      >
+                        <AnimatedImage
+                          entering={FadeIn}
+                          exiting={FadeOut}
+                          layout={LinearTransition}
+                          source={{ uri: image as string }}
+                          style={[
+                            styles.imagePlacer,
+                            { width: 200, height: 200 },
+                          ]}
+                          resizeMode="cover"
+                        />
+                      </Zoomable>
+                    </GestureHandlerRootView>
                   </View>
                   {/* Zoom level buttons */}
                   <View style={styles.zoomButtonsContainer}>
@@ -259,6 +374,7 @@ const styles = StyleSheet.create({
     borderWidth: 5,
     borderColor: "white",
     borderRadius: 12,
+    overflow: "hidden",
   },
   imagePlacer: {
     borderWidth: 0,
