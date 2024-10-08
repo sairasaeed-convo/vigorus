@@ -20,7 +20,7 @@ const ProfileScreenModal = ({ visible, onClose }: ProfileScreenModalProps) => {
   const handleLogOutClick = () => {};
   const handleDeleteAccountClick = () => {};
   return (
-    <Modal animationType="slide" transparent={true} visible={visible}>
+    <Modal animationType="slide" transparent={true} visible={visible}  onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <View style={{ flexGrow: 1 }}>
           <View style={styles.modalView}>

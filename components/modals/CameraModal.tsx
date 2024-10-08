@@ -17,17 +17,11 @@ import {
   Modal,
   Dimensions,
 } from "react-native";
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   FadeIn,
   FadeOut,
-  Layout,
   LinearTransition,
-  SharedValue,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
@@ -37,12 +31,8 @@ import * as ImagePicker from "expo-image-picker";
 
 import { StatusBar } from "expo-status-bar";
 import CommonFloatingButton from "../common/CommonFloatingButton";
-import {
-  ZOOM_TYPE,
-  Zoomable,
-  ZoomableProps,
-  ZoomableRef,
-} from "@likashefqet/react-native-image-zoom";
+import { ZOOM_TYPE, Zoomable } from "@likashefqet/react-native-image-zoom";
+import OnboardingViewPagerModal from "../common/OnboardingViewPagerModal";
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
@@ -84,6 +74,8 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
 
   const isPermissionGranted = cameraPermission?.granted;
 
+  const [modalVisible, setModalVisible] = useState(true);
+
   function toggleTorch() {
     setTorchMode((current) => !current);
   }
@@ -101,11 +93,13 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
       setZoom(0);
       setImage(null);
       setIsCameraReady(false);
+      // setModalVisible(true);
     }
   }, [visible, isPermissionGranted]);
 
   const handleInstructionsClick = () => {
-    onClose();
+    setModalVisible(true);
+    // onClose();
   };
   const handleMinZoom = () => {
     setZoom(0.5);
@@ -140,7 +134,7 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
   };
 
   return (
-    <Modal animationType="fade" transparent={true} visible={visible}>
+    <Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <StatusBar hidden={false} />
         <View style={{ flexGrow: 1 }}>
@@ -342,11 +336,18 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
                     </View>
                   </>
                 )}
+                  {visible && (
+                <OnboardingViewPagerModal
+                  visible={modalVisible}
+                  onClose={() => setModalVisible(false)}
+                />
+              )}
               </View>
             </CameraView>
           ) : (
             <Text style={styles.button}>⚠️ We need access to your Camera!</Text>
           )}
+           
         </View>
       </View>
     </Modal>

@@ -95,7 +95,7 @@ const ScheduleModal = ({ visible, onClose }: ScheduleModalProps) => {
   };
 
   return (
-    <Modal animationType="slide" transparent={true} visible={visible}>
+    <Modal animationType="slide" transparent={true} visible={visible}  onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <View style={{ flexGrow: 1 }}>
           <ScrollView>
