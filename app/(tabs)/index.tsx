@@ -63,8 +63,13 @@ export default function HomeScreen() {
   const handleScanALesionClick = () => {};
 
   const [scannedData, setScannedData] = useState<ScannedData[]>([]); // Initialize with an empty array
-  const [modalVisible, setModalVisible] = useState(false);
   const [caemraModalVisible, setCameraModalVisible] = useState(false);
+
+  const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    setModalVisible(modalVisible);
+  }, [modalVisible]);
 
   useEffect(() => {
     const fetchData = async () => {

@@ -74,11 +74,15 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
 
   const isPermissionGranted = cameraPermission?.granted;
 
-  const [modalVisible, setModalVisible] = useState(true);
-
   function toggleTorch() {
     setTorchMode((current) => !current);
   }
+
+  const [modalVisible, setModalVisible] = useState(visible);
+
+  useEffect(() => {
+    setModalVisible(visible);
+  }, [visible]);
 
   useEffect(() => {
     if (visible) {
@@ -93,13 +97,11 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
       setZoom(0);
       setImage(null);
       setIsCameraReady(false);
-      // setModalVisible(true);
     }
   }, [visible, isPermissionGranted]);
 
   const handleInstructionsClick = () => {
-    setModalVisible(true);
-    // onClose();
+    onClose();
   };
   const handleMinZoom = () => {
     setZoom(0.5);
@@ -113,6 +115,10 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
 
   const handleRetakePhoto = () => {
     setImage(null);
+    setFlashMode("off");
+    setTorchMode(false);
+    setZoom(0);
+    setModalVisible(false);
   };
 
   const onCaptureClick = () => {
@@ -134,10 +140,21 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
   };
 
   return (
-    <Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
       <View style={styles.centeredView}>
         <StatusBar hidden={false} />
         <View style={{ flexGrow: 1 }}>
+          {visible && (
+            <OnboardingViewPagerModal
+              visible={modalVisible}
+              onClose={() => setModalVisible(false)}
+            />
+          )}
           {isPermissionGranted ? (
             <CameraView
               enableTorch={torchMode}
@@ -336,18 +353,11 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
                     </View>
                   </>
                 )}
-                  {visible && (
-                <OnboardingViewPagerModal
-                  visible={modalVisible}
-                  onClose={() => setModalVisible(false)}
-                />
-              )}
               </View>
             </CameraView>
           ) : (
             <Text style={styles.button}>⚠️ We need access to your Camera!</Text>
           )}
-           
         </View>
       </View>
     </Modal>

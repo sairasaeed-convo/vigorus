@@ -9,7 +9,25 @@ import {
   Image,
   Modal,
   Dimensions,
+  PanResponder,
+  Animated,
+  Pressable,
 } from "react-native";
+
+//   useEffect(() => {
+//     // Auto-scroll logic
+//     if (isModalVisible) {
+//       autoScrollInterval = setInterval(() => {
+//         if (pagerRef.current) {
+//           const currentPage = -1; //(pagerRef.current as any).getCurrentPage();
+//           const nextPage = (currentPage + 1) % OnBoardingData.length;
+//           pagerRef.current.setPage(nextPage);
+//         }
+//       }, 1000);
+//     }
+
+//     return () => clearInterval(autoScrollInterval);
+//   }, [isModalVisible]);
 
 interface OnboardingViewPagerModalProps {
   visible: boolean;
@@ -38,28 +56,59 @@ const OnboardingViewPagerModal = ({
   const [isModalVisible, setModalVisible] = useState(visible);
   const [currentPage, setCurrentPage] = useState(0);
   const pagerRef = useRef<PagerView>(null);
-  let autoScrollInterval: NodeJS.Timeout;
+  const pan = useRef(new Animated.ValueXY()).current;
 
-  //   useEffect(() => {
-  //     // Auto-scroll logic
-  //     if (isModalVisible) {
-  //       autoScrollInterval = setInterval(() => {
-  //         if (pagerRef.current) {
-  //           const currentPage = -1; //(pagerRef.current as any).getCurrentPage();
-  //           const nextPage = (currentPage + 1) % OnBoardingData.length;
-  //           pagerRef.current.setPage(nextPage);
-  //         }
-  //       }, 1000);
-  //     }
+  useEffect(() => {
+    setModalVisible(visible);
+  }, [visible]);
 
-  //     return () => clearInterval(autoScrollInterval);
-  //   }, [isModalVisible]);
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gestureState) => {
+        const verticalMovement = Math.abs(gestureState.dy);
+        const horizontalMovement = Math.abs(gestureState.dx);
+        const threshold = 5; // Adjust this value as needed
 
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
+        // Check if vertical movement exceeds the threshold and is greater than horizontal movement
+        return (
+          verticalMovement > threshold && verticalMovement > horizontalMovement
+        );
+      },
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Same logic as onStartShouldSetPanResponder (with threshold if needed)
+        const verticalMovement = Math.abs(gestureState.dy);
+        const horizontalMovement = Math.abs(gestureState.dx);
+        const threshold = 5;
+        return (
+          verticalMovement > threshold && verticalMovement > horizontalMovement
+        );
+      },
+      onPanResponderMove: Animated.event(
+        [null, { dy: pan.y }], // Only track dy
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: (e, gestureState) => {
+        if (gestureState.dy > 100) {
+          // If the drag is greater than 100, dismiss the modal
+          Animated.timing(pan, {
+            toValue: { x: 0, y: 1000 }, // Move the modal off the screen
+            duration: 300,
+            useNativeDriver: true,
+          }).start(() => {
+            onClose(); // Call the onClose prop to dismiss the modal
+          });
+        } else {
+          // Otherwise, spring back to the original position
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
-  if (!visible) {
+  if (!isModalVisible) {
     return null;
   }
 
@@ -71,9 +120,30 @@ const OnboardingViewPagerModal = ({
       style={styles.modal}
       onRequestClose={onClose}
     >
-      <View style={styles.content}>
+
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[
+          styles.content,
+          {
+            transform: [
+              {
+                translateY: pan.y.interpolate({
+                  inputRange: [-100, 0, 1000], // Define range for smooth dragging
+                  outputRange: [-50, 0, 1000], // How the modal moves within this range
+                  extrapolate: "clamp", // Prevent dragging too far out of bounds
+                }),
+              },
+            ],
+          },
+        ]}
+      >
         {/* Draggable handle */}
-        <View style={styles.handle} />
+        <Pressable
+          onPress={(event) => event.target == event.currentTarget && onClose()}
+        >
+          <View style={styles.handle} />
+        </Pressable>
 
         <PagerView
           style={styles.pagerView}
@@ -101,12 +171,17 @@ const OnboardingViewPagerModal = ({
             />
           ))}
         </View>
-      </View>
+      </Animated.View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   modal: {
     justifyContent: "flex-end",
     margin: 0,
@@ -121,12 +196,12 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   handle: {
-    width: 40, 
-    height: 4,  
-    backgroundColor: 'gray', 
-    borderRadius: 2, 
-    alignSelf: 'center', 
-    marginTop: 12, 
+    width: 40,
+    height: 4,
+    backgroundColor: "gray",
+    borderRadius: 2,
+    alignSelf: "center",
+    marginTop: 12,
     marginBottom: 8,
   },
   pagerView: {
