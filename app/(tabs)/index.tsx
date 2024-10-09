@@ -44,25 +44,23 @@ const BodyParts = [
   { name: "Lower Back", info: "Info", type: "LowerBody" },
 ];
 
-// Function to get image URL based on body part name
 const getImageUrlForBodyPart = (bodyPartName: String) => {
-  // Implement your logic to map body part names to image URLs
-  // Example:
   if (bodyPartName === "Left Lower Leg") {
     return "https://imgur.com/P0IJ1mD.png";
   } else if (bodyPartName === "Head") {
     return "https://i.imgur.com/W7b2lXE.png";
   }
-  // ... add more mappings for other body parts
-  return "https://i.imgur.com/W7b2lXE.png"; // Default image URL if no mapping found
+  return "https://i.imgur.com/W7b2lXE.png";
 };
 
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function HomeScreen() {
-  const handleScanALesionClick = () => {};
+  const handleScanALesionClick = () => {
+    setCameraModalVisible(true);
+  };
 
-  const [scannedData, setScannedData] = useState<ScannedData[]>([]); // Initialize with an empty array
+  const [scannedData, setScannedData] = useState<ScannedData[]>([]); 
   const [caemraModalVisible, setCameraModalVisible] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -133,7 +131,7 @@ export default function HomeScreen() {
         <View style={{ flex: 1, alignItems: "center" }}>
           <TouchableOpacity
             style={styles.scanButton}
-            onPress={() => setCameraModalVisible(true)}
+            onPress={() => handleScanALesionClick()}
           >
             <Ionicons name="camera-outline" size={20} color="#fff" />
             <Text style={styles.scanButtonText}>Scan a Lesion</Text>

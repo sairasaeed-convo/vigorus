@@ -151,7 +151,10 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
   };
 
   const handleRetakePhoto = () => {
-    resetCameraSettings()
+    resetCameraSettings();
+  };
+
+  const handleUsePhoto = () => {
   };
 
   const onCaptureClick = () => {
@@ -177,7 +180,8 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
       animationType="fade"
       transparent={true}
       visible={visible}
-      onRequestClose={onClose}>
+      onRequestClose={onClose}
+    >
       <View style={{ flexGrow: 1 }}>
         {visible && (
           <OnboardingViewPagerModal
@@ -371,7 +375,9 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
 
                       <TouchableOpacity
                         style={styles.retakeOrUsePhotoButton}
-                        onPress={() => {}}
+                        onPress={() => {
+                          handleUsePhoto();
+                        }}
                       >
                         <Text style={styles.zoomButtonText}>Use Photo</Text>
                       </TouchableOpacity>
