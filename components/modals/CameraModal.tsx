@@ -26,6 +26,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { CameraView, FlashMode, useCameraPermissions } from "expo-camera";
+import { captureRef } from "react-native-view-shot";
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -70,15 +71,40 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
   const [toggleMinMaxZoom, setZoom] = useState<number>(0);
   const [torchMode, setTorchMode] = useState<boolean>(false);
 
+  const isPermissionGranted = cameraPermission?.granted;
+
+  const [modalVisible, setModalVisible] = useState(visible);
+
+  const cameraRef = useRef<CameraView>(null);
+  const [fullScreenIimage, setFullScreenImage] = useState<string | null>(null);
+  const viewRef = useRef(null);
   const [image, setImage] = useState<string | null>(null);
 
-  const isPermissionGranted = cameraPermission?.granted;
+  async function handleCapture() {
+    try {
+      const uri = await captureRef(viewRef, {
+        format: "png",
+        quality: 1,
+      });
+      setImage(uri);
+    } catch (error) {
+      console.error("Failed to capture screenshot:", error);
+    }
+  }
+
+  async function takePicture() {
+    if (cameraRef && cameraRef.current) {
+      const data = await cameraRef.current.takePictureAsync();
+      if (data?.uri ?? null) {
+        setFullScreenImage(data?.uri ?? "");
+        handleCapture();
+      }
+    }
+  }
 
   function toggleTorch() {
     setTorchMode((current) => !current);
   }
-
-  const [modalVisible, setModalVisible] = useState(visible);
 
   useEffect(() => {
     setModalVisible(visible);
@@ -91,14 +117,26 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
           await requestCameraPermission();
         }
       })();
-
       setFlashMode("off");
       setTorchMode(false);
       setZoom(0);
       setImage(null);
+      setFullScreenImage(null);
       setIsCameraReady(false);
+    } else {
+      resetCameraSettings();
     }
   }, [visible, isPermissionGranted]);
+
+  const resetCameraSettings = () => {
+    setFlashMode("off");
+    setTorchMode(false);
+    setZoom(0);
+    setImage(null);
+    setFullScreenImage(null);
+    setIsCameraReady(false);
+    setModalVisible(false);
+  };
 
   const handleInstructionsClick = () => {
     onClose();
@@ -114,15 +152,11 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
   };
 
   const handleRetakePhoto = () => {
-    setImage(null);
-    setFlashMode("off");
-    setTorchMode(false);
-    setZoom(0);
-    setModalVisible(false);
+    resetCameraSettings()
   };
 
   const onCaptureClick = () => {
-    // Handle capture click
+    takePicture();
   };
 
   if (!visible) {
@@ -144,221 +178,244 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
       animationType="fade"
       transparent={true}
       visible={visible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.centeredView}>
-        <StatusBar hidden={false} />
-        <View style={{ flexGrow: 1 }}>
-          {visible && (
-            <OnboardingViewPagerModal
-              visible={modalVisible}
-              onClose={() => setModalVisible(false)}
-            />
-          )}
-          {isPermissionGranted ? (
-            <CameraView
-              enableTorch={torchMode}
-              ref={cameraRef}
-              facing="back"
-              flash={flashMode}
-              mode={"picture"}
-              zoom={toggleMinMaxZoom}
-              onCameraReady={() => setIsCameraReady(true)}
-            >
-              <View style={styles.container}>
-                {/* Instructions */}
-                <View style={styles.instructionsContainer}>
-                  <TouchableOpacity
-                    style={{ backgroundColor: "transparent" }}
-                    onPress={handleInstructionsClick}
-                  >
-                    <Text style={styles.text}>Instructions</Text>
-                  </TouchableOpacity>
-                </View>
+      onRequestClose={onClose}>
+      <View style={{ flexGrow: 1 }}>
+        {visible && (
+          <OnboardingViewPagerModal
+            visible={modalVisible}
+            onClose={() => setModalVisible(false)}
+          />
+        )}
 
-                {/* Close and flash button */}
-                <View style={styles.closeOrFlashContainer}>
-                  <CommonFloatingButton
-                    iconName="close"
-                    onPress={() => {
-                      onClose();
-                    }}
-                    backgroundColor="white"
-                    iconColor="black"
-                    size={42}
-                  />
-                  <CommonFloatingButton
-                    iconName="flash"
-                    onPress={() => toggleTorch()}
-                    backgroundColor="white"
-                    iconColor="black"
-                    size={42}
-                  />
-                </View>
-                {/* Frame middle */}
-                <View style={styles.frameAndZoomContainer}>
-                  <View
-                    style={[
-                      styles.overlay,
-                      { width: overlayWidth, height: overlayHeight },
-                    ]}
-                  >
-                    {image && (
-                      <GestureHandlerRootView
-                        style={styles.frameAndZoomContainer}
-                      >
-                        <Zoomable
-                          // ref={ref}
-                          entering={FadeIn}
-                          exiting={FadeOut}
-                          layout={LinearTransition}
-                          minScale={1}
-                          maxScale={5}
-                          scale={scale}
-                          onInteractionStart={() => {
-                            console.log("onInteractionStart");
-                            onZoom();
-                          }}
-                          isPanEnabled={true}
-                          isPinchEnabled={true}
-                          isSingleTapEnabled={true}
-                          onInteractionEnd={() =>
-                            console.log("onInteractionEnd")
-                          }
-                          // Pan events
-                          onPanStart={() => {
-                            console.log("onPanStart");
-                            if (!isPinching.value) {
-                              isPinching.value = false;
-                            }
-                          }}
-                          onPanEnd={() => {
-                            console.log("onPanEnd");
-                            if (!isPinching.value) {
-                              isPinching.value = false;
-                            }
-                          }}
-                          // Pinch events
-                          onPinchStart={() => {
-                            console.log("onPinchStart");
-                            isPinching.value = false;
-                          }}
-                          onPinchEnd={() => {
-                            console.log("onPinchEnd");
-                            isPinching.value = true;
-                          }}
-                          onProgrammaticZoom={(zoomType) => {
-                            console.log("onZoom", zoomType);
-                            onZoom(zoomType);
-                          }}
-                          onResetAnimationEnd={(finished, values) => {
-                            console.log("onResetAnimationEnd", finished);
-                            console.log(
-                              "lastScaleValue:",
-                              values?.SCALE.lastValue
-                            );
-
-                            if (isPinching.value && values?.SCALE?.lastValue) {
-                              scale.value = withTiming(values.SCALE.lastValue);
-                              onAnimationEnd(finished);
-                            }
-                          }}
-                        >
-                          <AnimatedImage
-                            entering={FadeIn}
-                            exiting={FadeOut}
-                            layout={LinearTransition}
-                            source={{ uri: image as string }}
-                            style={[
-                              styles.imagePlacer,
-                              { width: 200, height: 200 },
-                            ]}
-                            resizeMode="cover"
-                          />
-                        </Zoomable>
-                      </GestureHandlerRootView>
-                    )}
-                  </View>
-                  {/* Zoom level buttons */}
-                  <View style={styles.zoomButtonsContainer}>
+        {isPermissionGranted ? (
+          <CameraView
+            enableTorch={torchMode}
+            ref={cameraRef}
+            facing="back"
+            flash={flashMode}
+            mode={"picture"}
+            zoom={toggleMinMaxZoom}
+            onCameraReady={() => setIsCameraReady(true)}
+          >
+            <View style={styles.centeredView}>
+              {fullScreenIimage && (
+                <Image
+                  source={{ uri: fullScreenIimage }}
+                  style={styles.fullScreenImage}
+                  resizeMode="cover"
+                />
+              )}
+              <View style={styles.centeredViewNew}>
+                <StatusBar hidden={false} />
+                <View style={styles.container}>
+                  {/* Instructions */}
+                  <View style={styles.instructionsContainer}>
                     <TouchableOpacity
-                      style={styles.zoomButton}
-                      onPress={() => {
-                        handleMinZoom();
-                      }}
+                      style={{ backgroundColor: "transparent" }}
+                      onPress={handleInstructionsClick}
                     >
-                      <Text style={styles.zoomButtonText}>1x</Text>
-                    </TouchableOpacity>
-                    <View style={{ marginHorizontal: 16 }}></View>
-
-                    <TouchableOpacity
-                      style={styles.zoomButton}
-                      onPress={() => {
-                        handleMaxZoom();
-                      }}
-                    >
-                      <Text style={styles.zoomButtonText}>2x</Text>
+                      <Text style={styles.text}>Instructions</Text>
                     </TouchableOpacity>
                   </View>
-                </View>
 
-                {/*  Retake or use photo */}
-                {image ? (
-                  <View style={styles.retakeOrUsePhotoButtonsContainer}>
-                    <TouchableOpacity
-                      style={styles.retakeOrUsePhotoButton}
+                  {/* Close and flash button */}
+                  <View style={styles.closeOrFlashContainer}>
+                    <CommonFloatingButton
+                      iconName="close"
                       onPress={() => {
-                        handleRetakePhoto();
+                        onClose();
                       }}
-                    >
-                      <Text style={styles.zoomButtonText}>Retake Photo</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.retakeOrUsePhotoButton}
-                      onPress={() => {}}
-                    >
-                      <Text style={styles.zoomButtonText}>Use Photo</Text>
-                    </TouchableOpacity>
+                      backgroundColor="white"
+                      iconColor="black"
+                      size={42}
+                    />
+                    <CommonFloatingButton
+                      iconName="flash"
+                      onPress={() => toggleTorch()}
+                      backgroundColor="white"
+                      iconColor="black"
+                      size={42}
+                    />
                   </View>
-                ) : (
-                  <>
-                    {/* Gallery and Capture buttons */}
-                    <View style={styles.bottomButtonsContainer}>
-                      <TouchableOpacity
-                        style={styles.galleryButton}
-                        onPress={onGalleryClick}
-                      >
-                        <Ionicons name="images" size={24} color="white" />
-                      </TouchableOpacity>
 
+                  {/* Frame middle */}
+                  <View style={styles.frameAndZoomContainer}>
+                    <View
+                      style={[
+                        styles.overlay,
+                        { width: overlayWidth, height: overlayHeight },
+                      ]}
+                    >
                       <View
-                        style={{
-                          backgroundColor: "transparent",
-                          borderColor: "white",
-                          borderWidth: 3,
-                          width: 80,
-                          height: 80,
-                          borderRadius: 50,
-                          justifyContent: "center",
-                          alignItems: "center",
-                          marginHorizontal: 90,
-                        }}
+                        ref={viewRef}
+                        style={[
+                          styles.overlayScreenShot,
+                          { width: overlayWidth, height: overlayHeight },
+                        ]}
                       >
-                        <TouchableOpacity
-                          style={styles.captureButton}
-                          onPress={onCaptureClick}
-                        ></TouchableOpacity>
+                        {image && (
+                          <GestureHandlerRootView
+                            style={styles.frameAndZoomContainer}
+                          >
+                            <Zoomable
+                              entering={FadeIn}
+                              exiting={FadeOut}
+                              layout={LinearTransition}
+                              minScale={1}
+                              maxScale={5}
+                              scale={scale}
+                              onInteractionStart={() => {
+                                console.log("onInteractionStart");
+                                onZoom();
+                              }}
+                              isPanEnabled={true}
+                              isPinchEnabled={true}
+                              isSingleTapEnabled={true}
+                              onInteractionEnd={() =>
+                                console.log("onInteractionEnd")
+                              }
+                              // Pan events
+                              onPanStart={() => {
+                                console.log("onPanStart");
+                                if (!isPinching.value) {
+                                  isPinching.value = false;
+                                }
+                              }}
+                              onPanEnd={() => {
+                                console.log("onPanEnd");
+                                if (!isPinching.value) {
+                                  isPinching.value = false;
+                                }
+                              }}
+                              // Pinch events
+                              onPinchStart={() => {
+                                console.log("onPinchStart");
+                                isPinching.value = false;
+                              }}
+                              onPinchEnd={() => {
+                                console.log("onPinchEnd");
+                                isPinching.value = true;
+                              }}
+                              onProgrammaticZoom={(zoomType) => {
+                                console.log("onZoom", zoomType);
+                                onZoom(zoomType);
+                              }}
+                              onResetAnimationEnd={(finished, values) => {
+                                console.log("onResetAnimationEnd", finished);
+                                console.log(
+                                  "lastScaleValue:",
+                                  values?.SCALE.lastValue
+                                );
+
+                                if (
+                                  isPinching.value &&
+                                  values?.SCALE?.lastValue
+                                ) {
+                                  scale.value = withTiming(
+                                    values.SCALE.lastValue
+                                  );
+                                  onAnimationEnd(finished);
+                                }
+                              }}
+                            >
+                              <AnimatedImage
+                                entering={FadeIn}
+                                exiting={FadeOut}
+                                layout={LinearTransition}
+                                source={{ uri: image as string }}
+                                style={[
+                                  styles.imagePlacer,
+                                  { width: 200, height: 200 },
+                                ]}
+                                resizeMode="cover"
+                              />
+                            </Zoomable>
+                          </GestureHandlerRootView>
+                        )}
                       </View>
                     </View>
-                  </>
-                )}
+
+                    {/* Zoom level buttons */}
+                    <View style={styles.zoomButtonsContainer}>
+                      <TouchableOpacity
+                        style={styles.zoomButton}
+                        onPress={() => {
+                          handleMinZoom();
+                        }}
+                      >
+                        <Text style={styles.zoomButtonText}>1x</Text>
+                      </TouchableOpacity>
+                      <View style={{ marginHorizontal: 16 }}></View>
+
+                      <TouchableOpacity
+                        style={styles.zoomButton}
+                        onPress={() => {
+                          handleMaxZoom();
+                        }}
+                      >
+                        <Text style={styles.zoomButtonText}>2x</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/*  Retake or use photo */}
+                  {image ? (
+                    <View style={styles.retakeOrUsePhotoButtonsContainer}>
+                      <TouchableOpacity
+                        style={styles.retakeOrUsePhotoButton}
+                        onPress={() => {
+                          handleRetakePhoto();
+                        }}
+                      >
+                        <Text style={styles.zoomButtonText}>Retake Photo</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.retakeOrUsePhotoButton}
+                        onPress={() => {}}
+                      >
+                        <Text style={styles.zoomButtonText}>Use Photo</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <>
+                      {/* Gallery and Capture buttons */}
+                      <View style={styles.bottomButtonsContainer}>
+                        <TouchableOpacity
+                          style={styles.galleryButton}
+                          onPress={onGalleryClick}
+                        >
+                          <Ionicons name="images" size={24} color="white" />
+                        </TouchableOpacity>
+
+                        <View
+                          style={{
+                            backgroundColor: "transparent",
+                            borderColor: "white",
+                            borderWidth: 3,
+                            width: 80,
+                            height: 80,
+                            borderRadius: 50,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            marginHorizontal: 90,
+                          }}
+                        >
+                          <TouchableOpacity
+                            style={styles.captureButton}
+                            onPress={onCaptureClick}
+                          ></TouchableOpacity>
+                        </View>
+                      </View>
+                    </>
+                  )}
+                </View>
               </View>
-            </CameraView>
-          ) : (
-            <Text style={styles.button}>⚠️ We need access to your Camera!</Text>
-          )}
-        </View>
+            </View>
+          </CameraView>
+        ) : (
+          <Text style={styles.button}>⚠️ We need access to your Camera!</Text>
+        )}
       </View>
     </Modal>
   );
@@ -371,6 +428,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
   },
   centeredView: {
+    flexGrow: 1,
+  },
+  centeredViewNew: {
     flexGrow: 1,
     alignItems: "center",
   },
@@ -403,6 +463,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     justifyContent: "space-between",
   },
+  fullScreenImage: {
+    position: "absolute",
+    width: width,
+    height: height,
+    zIndex: 1,
+  },
   frameAndZoomContainer: {
     flexGrow: 1,
     flexDirection: "column",
@@ -414,6 +480,11 @@ const styles = StyleSheet.create({
     borderColor: "white",
     borderRadius: 12,
     overflow: "hidden",
+  },
+  overlayScreenShot: {
+    borderWidth: 0,
+    borderColor: "transparent",
+    borderRadius: 0,
   },
   imagePlacer: {
     borderWidth: 0,
@@ -445,6 +516,7 @@ const styles = StyleSheet.create({
     marginVertical: 24,
   },
   retakeOrUsePhotoButtonsContainer: {
+    marginEnd: 24,
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-evenly",
