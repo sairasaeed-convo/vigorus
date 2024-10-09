@@ -1,5 +1,5 @@
 import PagerView from "react-native-pager-view";
-
+import { SwiperFlatList } from "react-native-swiper-flatlist";
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -13,21 +13,6 @@ import {
   Animated,
   Pressable,
 } from "react-native";
-
-//   useEffect(() => {
-//     // Auto-scroll logic
-//     if (isModalVisible) {
-//       autoScrollInterval = setInterval(() => {
-//         if (pagerRef.current) {
-//           const currentPage = -1; //(pagerRef.current as any).getCurrentPage();
-//           const nextPage = (currentPage + 1) % OnBoardingData.length;
-//           pagerRef.current.setPage(nextPage);
-//         }
-//       }, 1000);
-//     }
-
-//     return () => clearInterval(autoScrollInterval);
-//   }, [isModalVisible]);
 
 interface OnboardingViewPagerModalProps {
   visible: boolean;
@@ -67,7 +52,7 @@ const OnboardingViewPagerModal = ({
       onStartShouldSetPanResponder: (evt, gestureState) => {
         const verticalMovement = Math.abs(gestureState.dy);
         const horizontalMovement = Math.abs(gestureState.dx);
-        const threshold = 5; // Adjust this value as needed
+        const threshold = 5;
 
         // Check if vertical movement exceeds the threshold and is greater than horizontal movement
         return (
@@ -75,7 +60,6 @@ const OnboardingViewPagerModal = ({
         );
       },
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Same logic as onStartShouldSetPanResponder (with threshold if needed)
         const verticalMovement = Math.abs(gestureState.dy);
         const horizontalMovement = Math.abs(gestureState.dx);
         const threshold = 5;
@@ -88,7 +72,7 @@ const OnboardingViewPagerModal = ({
         { useNativeDriver: false }
       ),
       onPanResponderRelease: (e, gestureState) => {
-        if (gestureState.dy > 100) {
+        if (gestureState.dy > 50) {
           // If the drag is greater than 100, dismiss the modal
           Animated.timing(pan, {
             toValue: { x: 0, y: 1000 }, // Move the modal off the screen
@@ -98,7 +82,6 @@ const OnboardingViewPagerModal = ({
             onClose(); // Call the onClose prop to dismiss the modal
           });
         } else {
-          // Otherwise, spring back to the original position
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
             useNativeDriver: true,
@@ -120,7 +103,6 @@ const OnboardingViewPagerModal = ({
       style={styles.modal}
       onRequestClose={onClose}
     >
-
       <Animated.View
         {...panResponder.panHandlers}
         style={[
@@ -145,7 +127,7 @@ const OnboardingViewPagerModal = ({
           <View style={styles.handle} />
         </Pressable>
 
-        <PagerView
+        {/* <PagerView
           style={styles.pagerView}
           initialPage={0}
           ref={pagerRef}
@@ -158,23 +140,29 @@ const OnboardingViewPagerModal = ({
               <Image source={item.image} style={styles.image} />
             </View>
           ))}
-        </PagerView>
-        {/* Dot indicators */}
-        <View style={styles.dotsContainer}>
-          {OnBoardingData.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                { opacity: currentPage === index ? 1 : 0.5 }, // Change opacity based on active page
-              ]}
-            />
-          ))}
-        </View>
+        </PagerView> */}
+
+        <SwiperFlatList
+          autoplay
+          autoplayDelay={1}
+          autoplayLoop
+          index={0} // Start from the first item
+          showPagination
+          paginationActiveColor="black"
+          data={OnBoardingData}
+          renderItem={({ item, index }) => (
+            <View key={index} style={styles.page}>
+              <Text style={styles.title}>{item.title}</Text>
+              <Image source={item.image} style={styles.image} />
+            </View>
+          )}
+        />
       </Animated.View>
     </Modal>
   );
 };
+
+const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   modalContainer: {
@@ -204,28 +192,22 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 8,
   },
-  pagerView: {
-    flex: 1,
-    height: 250,
-  },
   page: {
-    flexDirection: "column",
+    width,
     alignItems: "center",
-    alignSelf: "center",
   },
   image: {
-    marginTop: 24,
-    width: 160,
-    height: 160,
+    marginTop: 18,
+    width: 200,
+    height: 200,
   },
   title: {
     marginStart: 24,
-    marginTop: 12,
     fontSize: 18,
+    marginTop: 12,
     marginEnd: 24,
     color: "black",
     fontWeight: "600",
-    textAlign: "auto",
   },
   dotsContainer: {
     flexDirection: "row",
