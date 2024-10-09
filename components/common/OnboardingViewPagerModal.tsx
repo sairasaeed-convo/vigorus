@@ -126,28 +126,14 @@ const OnboardingViewPagerModal = ({
         >
           <View style={styles.handle} />
         </Pressable>
-
-        {/* <PagerView
-          style={styles.pagerView}
-          initialPage={0}
-          ref={pagerRef}
-          onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
-        >
-          {OnBoardingData.map((item, index) => (
-            <View key={index} style={styles.page}>
-              <Text style={styles.title}>{item.title}</Text>
-
-              <Image source={item.image} style={styles.image} />
-            </View>
-          ))}
-        </PagerView> */}
-
         <SwiperFlatList
-          autoplay
+          autoplay={true}
           autoplayDelay={1}
-          autoplayLoop
-          index={0} // Start from the first item
-          showPagination
+          autoplayLoop={true}
+          autoplayLoopKeepAnimation={false}
+          autoplayInvertDirection={false}
+          index={0}
+          showPagination={true}
           paginationActiveColor="black"
           data={OnBoardingData}
           renderItem={({ item, index }) => (
