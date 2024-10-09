@@ -67,7 +67,6 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [flashMode, setFlashMode] = useState<FlashMode>("off");
-  const cameraRef = useRef<CameraView>(null);
   const [toggleMinMaxZoom, setZoom] = useState<number>(0);
   const [torchMode, setTorchMode] = useState<boolean>(false);
 
