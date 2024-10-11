@@ -13,11 +13,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { ThemedText } from "@/components/ThemedText";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BodyParts, bodyPartsData } from "@/interface/BodyParts";
+import { useRouter } from 'expo-router';
+import NotFoundScreen from "../+not-found";
 
 export default function SkinCheckScreen({ navigation }: any) {
+  const router = useRouter();
   const handleStartCheck = () => {
-    // navigation.navigate("StartSkinCheck");
-    //  fff
+    router.navigate("../+not-found"); 
   };
 
   const handleBodyPartPress = (bodyPart: BodyParts) => {

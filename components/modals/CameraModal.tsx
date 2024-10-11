@@ -17,6 +17,7 @@ import {
   Modal,
   Dimensions,
 } from "react-native";
+import * as MediaLibrary from "expo-media-library";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   FadeIn,
@@ -27,6 +28,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { CameraView, FlashMode, useCameraPermissions } from "expo-camera";
 import { captureRef } from "react-native-view-shot";
+import * as FileSystem from "expo-file-system";
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -34,6 +36,7 @@ import { StatusBar } from "expo-status-bar";
 import CommonFloatingButton from "../common/CommonFloatingButton";
 import { ZOOM_TYPE, Zoomable } from "@likashefqet/react-native-image-zoom";
 import OnboardingViewPagerModal from "../common/OnboardingViewPagerModal";
+import { useRouter } from "expo-router";
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
@@ -45,6 +48,8 @@ interface CameraModalProps {
 const { width, height } = Dimensions.get("window");
 
 const CameraModal = ({ visible, onClose }: CameraModalProps) => {
+  const router = useRouter();
+
   const [toggleIsZoomed, setIsZoomed] = useState<boolean>(false);
   const scale = useSharedValue(1);
   const isPinching = useSharedValue(true);
@@ -85,9 +90,26 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
         format: "png",
         quality: 1,
       });
-      setImage(uri);
+
+      // 1. Get a temporary file path
+      const tempPath = `${FileSystem.cacheDirectory}screenshot.png`;
+
+      // 2. Save the captured image to the temporary path
+      await FileSystem.copyAsync({ from: uri, to: tempPath });
+
+      // 3. Save to media library and get permanent URI
+      const asset = await MediaLibrary.createAssetAsync(tempPath);
+      const savedUri = asset.uri;
+      // 4. Optionally delete the temporary file
+      await FileSystem.deleteAsync(tempPath);
+
+      // 5. Set the image URI
+      setImage(savedUri);
+
+      return savedUri; // Return the saved URI
     } catch (error) {
-      console.error("Failed to capture screenshot:", error);
+      console.error("Failed to capture and save screenshot:", error);
+      return null; // Or throw an error if you prefer
     }
   }
 
@@ -154,7 +176,35 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
     resetCameraSettings();
   };
 
-  const handleUsePhoto = () => {
+  const handleUsePhoto = async () => {
+    if (image) {
+      try {
+        // Request permission and save the image
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status === "granted") {
+          await MediaLibrary.saveToLibraryAsync(image); // Save image
+          const asset = await MediaLibrary.createAssetAsync(image);
+
+          console.log("Image successfully saved:", asset); // Log saved image details
+
+          // Navigate to the other screen with the saved URI
+          if (asset.uri) {
+            router.navigate({
+              pathname: "/[predict_image_uri]",
+              params: { predict_image_uri: asset.uri }, // Pass the saved asset URI
+            });
+          }
+        } else {
+          alert("Permission to access media library is required.");
+        }
+      } catch (error) {
+        console.error("Error saving image:", error);
+      }
+    } else {
+      alert("Please select an image first.");
+    }
+
+    onClose();
   };
 
   const onCaptureClick = () => {
@@ -172,6 +222,7 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
+      setFullScreenImage(result.assets[0].uri);
     }
   };
 

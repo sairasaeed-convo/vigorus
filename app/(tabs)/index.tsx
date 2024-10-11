@@ -23,6 +23,7 @@ import {
 import { LOCAL_DB, ScannedData } from "@/interface/ScannedData";
 import ProfileScreenModal from "@/components/modals/ProfileScreenModal";
 import CameraModal from "@/components/modals/CameraModal";
+import { router } from "expo-router";
 
 const BodyParts = [
   { name: "Head", info: "Info", type: "UpperBody" },
@@ -104,7 +105,16 @@ export default function HomeScreen() {
       {/* Header */}
       <TouchableOpacity
         style={styles.header}
-        onPress={() => setModalVisible(true)}
+        onPress={() => {
+          // setModalVisible(true)
+          // if (asset.uri) {
+            router.navigate({
+              pathname: "/[predict_image_uri]",
+              params: { predict_image_uri: "asset.uri" }, // Pass the saved asset URI
+            });
+          // }
+        }
+        }
       >
         <Ionicons name="person-circle-outline" size={47} color="teal" />
       </TouchableOpacity>
