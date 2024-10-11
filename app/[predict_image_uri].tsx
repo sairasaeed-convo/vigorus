@@ -1,17 +1,10 @@
 import * as FileSystem from "expo-file-system";
 import { Link, router, useGlobalSearchParams } from "expo-router";
-import { Stack } from "expo-router";
+
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  ForwardRefRenderFunction,
-  ForwardedRef,
-  forwardRef,
-} from "react";
+import React, { useState, useEffect, useRef, useCallback, FC } from "react";
 import {
   View,
   Text,
@@ -19,18 +12,53 @@ import {
   StyleSheet,
   Image,
   ScrollView,
-  Dimensions,
   Pressable,
 } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+  PanGestureHandlerEventPayload,
+  HandlerStateChangeEvent,
+} from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import CommonFloatingButton from "@/components/common/CommonFloatingButton";
+import { Card } from "@/types/Card";
+import CardItem from "@/components/CardItem";
+import Stack, { StackProps } from "@/components/Stack";
+import { Linking } from "react-native";
 
 //       <Link href="/" style={styles.link}>
 {
   /* <ThemedText type="link">Go to home screen!</ThemedText>
 </Link> */
 }
+const cards: Card[] = [
+  {
+    title: "Lorem ipsum",
+    photo: "https://picsum.photos/id/1/500",
+    smallIcon: "",
+  },
+  {
+    title: "Dolor sit amet",
+    photo: "https://picsum.photos/id/2/500",
+    smallIcon: "",
+  },
+  {
+    title: "Consectetur adipiscing elit",
+    photo: "https://picsum.photos/id/3/500",
+    smallIcon: "",
+  },
+  {
+    title: "Phasellus ultricies",
+    photo: "https://picsum.photos/id/4/500",
+    smallIcon: "",
+  },
+  {
+    title: "Sed sit amet",
+    photo: "https://picsum.photos/id/5/500",
+    smallIcon: "",
+  },
+];
+
 export default function AnalyzeImage() {
   const { predict_image_uri } = useGlobalSearchParams();
   const [imageUri, setImageUri] = useState<string | undefined>(undefined);
@@ -38,6 +66,17 @@ export default function AnalyzeImage() {
   const [selectedTab, setSelectedTab] = useState("Self Evaluation");
   const [characteristicsTab, setSelectedCharacteristicsTab] = useState("No");
   const [riskPriority, setRiskPriorityTab] = useState("Low");
+  const [exampleLesion, setExampleLesionTab] = useState("Not Concerning");
+
+  const renderItem = useCallback((item: any) => <CardItem card={item} />, []);
+
+  const handleSwipeLeft = useCallback<
+    NonNullable<StackProps<Card>["onSwipeLeft"]>
+  >((item) => {}, []);
+
+  const handleSwipeRight = useCallback<
+    NonNullable<StackProps<Card>["onSwipeLeft"]>
+  >((item) => {}, []);
 
   useEffect(() => {
     handleImageLoad();
@@ -47,6 +86,13 @@ export default function AnalyzeImage() {
     const fileExists = await FileSystem.getInfoAsync(imageUri);
     return fileExists.exists;
   }
+
+  const handlePress = () => {
+    const url = "https://www.google.com"; // Replace with your desired URL
+    Linking.openURL(url).catch((err) =>
+      console.error("An error occurred", err)
+    );
+  };
 
   const handleImageLoad = async () => {
     if (typeof predict_image_uri === "string") {
@@ -118,26 +164,26 @@ export default function AnalyzeImage() {
           </View>
 
           {/* Use free AI Risk Assessment */}
-          <View style={styles.riskAssesmentAi}>
+          <ThemedView style={styles.riskAssesmentAi}>
             <Pressable>
-              <View style={styles.riskAssesmentContent}>
+              <ThemedView style={styles.riskAssesmentContent}>
                 <Ionicons
                   name="star"
                   size={50}
                   color="#197E8D"
                   style={{ padding: 12, margin: 12 }}
                 />
-                <View style={{ alignSelf: "center" }}>
+                <ThemedView style={{ alignSelf: "center" }}>
                   <ThemedText style={styles.assesmentHeader}>
                     Use a free AI Risk Assessment
                   </ThemedText>
                   <ThemedText style={styles.assesmentSubtitle}>
                     Assessments remaining: 3
                   </ThemedText>
-                </View>
-              </View>
+                </ThemedView>
+              </ThemedView>
             </Pressable>
-          </View>
+          </ThemedView>
 
           {/* Tabs */}
           <View style={styles.tabsContainer}>
@@ -284,17 +330,48 @@ export default function AnalyzeImage() {
               </ThemedView>
             </ScrollView>
           ) : (
-            <View
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-                flex: 1,
-              }}
-            >
-              <ThemedText style={styles.cardText}>
-                This is where examples will go.
-              </ThemedText>
-            </View>
+            <ScrollView contentContainerStyle={styles.body}>
+              <ThemedView style={styles.examplesCard}>
+                <View style={styles.examplesTabContainer}>
+                  {["Not Concerning", "Concerning"].map((tab) => (
+                    <TouchableOpacity
+                      key={tab}
+                      style={[
+                        styles.examplesTab,
+                        exampleLesion === tab && styles.selectedTab,
+                      ]}
+                      onPress={() => setExampleLesionTab(tab)}
+                    >
+                      <ThemedText style={styles.tabText}>{tab}</ThemedText>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <ThemedText style={styles.swipeCardMore}>
+                  Swipe the cards for more
+                </ThemedText>
+
+                <ThemedText style={styles.exampleBeningTitle}>
+                  Benign Lesion
+                </ThemedText>
+                {exampleLesion === "Not Concerning" ? (
+                  <Stack
+                    data={cards}
+                    renderItem={renderItem}
+                    onSwipeLeft={handleSwipeLeft}
+                    onSwipeRight={handleSwipeRight}
+                  />
+                ) : (
+                  <ThemedText style={styles.sectionTitle}>
+                    RISK PRIORITY
+                  </ThemedText>
+                )}
+                <Pressable onPress={handlePress}>
+                  <ThemedText style={styles.learnMore}>
+                    Learn More online
+                  </ThemedText>
+                </Pressable>
+              </ThemedView>
+            </ScrollView>
           )}
         </View>
       </View>
@@ -356,6 +433,22 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#197E8D",
   },
+  swipeCardMore: {
+    marginTop: 18,
+    marginHorizontal: 12,
+    fontSize: 17,
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "#1B1B1F",
+  },
+  exampleBeningTitle: {
+    marginTop: 18,
+    marginHorizontal: 12,
+    fontSize: 24,
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "#1B1B1F",
+  },
   schedulingCard: {
     flexDirection: "column",
     marginHorizontal: 20,
@@ -364,6 +457,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     shadowColor: "#FEFEFF",
+    justifyContent: "space-between",
+    elevation: 5,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+  },
+  examplesCard: {
+    flexDirection: "column",
+    backgroundColor: "white",
+    borderRadius: 8,
+    paddingVertical: 5,
+    shadowColor: "white",
     justifyContent: "space-between",
     elevation: 5,
     shadowOffset: {
@@ -440,6 +546,7 @@ const styles = StyleSheet.create({
   riskAssesmentContent: {
     alignSelf: "center",
     marginVertical: 12,
+    marginHorizontal:12,
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
@@ -486,5 +593,29 @@ const styles = StyleSheet.create({
   body: {
     backgroundColor: "#F3F2F7",
     paddingBottom: 42,
+  },
+
+  examplesTabContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#EEEEEE",
+    borderRadius: 10,
+    marginHorizontal: 52,
+  },
+  examplesTab: {
+    flexDirection: "row",
+    paddingVertical: 4,
+    paddingHorizontal: 32,
+    borderRadius: 10,
+    borderWidth: 2,
+    backgroundColor: "#EEEEEE",
+    borderColor: "#EEEEEE",
+  },
+  learnMore: {
+    textAlign: "center",
+    padding: 12,
+    fontSize: 16,
+    fontWeight: "medium",
+    color: "#2E7CE9",
   },
 });
