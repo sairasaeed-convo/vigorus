@@ -2,21 +2,26 @@ import React, { ReactNode, useEffect, useState } from "react";
 import { useWindowDimensions, View, ViewProps, StyleSheet } from "react-native";
 import {
   PanGestureHandler,
-  PanGestureHandlerGestureEvent,
+  GestureDetector,
+  Gesture,
 } from "react-native-gesture-handler";
 import Animated, {
-  interpolate,
-  runOnJS,
-  useAnimatedGestureHandler,
-  useAnimatedStyle,
-  useDerivedValue,
   useSharedValue,
   withSpring,
   withTiming,
+  useAnimatedGestureHandler,
+  useAnimatedStyle,
+  interpolate,
+  runOnJS,
+  useDerivedValue,
 } from "react-native-reanimated";
+
 
 const ROTATION_ANGLE = 60;
 const SWIPE_VELOCITY = 800;
+const TOUCH_SLOP = 5; // Threshold for touch movement
+const TIME_TO_ACTIVATE_PAN = 200; // Reduced time for pan activation
+
 
 export type StackProps<T> = Pick<ViewProps, "style"> & {
   data: T[];
@@ -38,25 +43,38 @@ function Stack<T>({
   const nextItem = data[nextIndex];
 
   const translateX = useSharedValue(0);
+  const touchStart = useSharedValue({ x: 0, y: 0, time: 0 });
 
   const { width: screenWidth } = useWindowDimensions();
-
   const hiddenTranslateX = 2 * screenWidth;
 
-  const gestureHandler = useAnimatedGestureHandler<
-    PanGestureHandlerGestureEvent,
-    { startX: number }
-  >({
-    onStart: (_, context) => {
-      context.startX = translateX.value;
-    },
-    onActive: (event, context) => {
-      translateX.value = context.startX + event.translationX;
-    },
-    onEnd: ({ velocityX }) => {
+  const gesture = Gesture.Pan()
+    .manualActivation(true)
+    .onTouchesDown((e) => {
+      touchStart.value = {
+        x: e.changedTouches[0].x,
+        y: e.changedTouches[0].y,
+        time: Date.now(),
+      };
+    })
+    .onTouchesMove((e, state) => {
+      const dx = Math.abs(touchStart.value.x - e.changedTouches[0].x);
+      const dy = Math.abs(touchStart.value.y - e.changedTouches[0].y);
+      const elapsed = Date.now() - touchStart.value.time;
+
+      // Activate gesture on horizontal movement or time passed
+      if (elapsed > TIME_TO_ACTIVATE_PAN || dx > dy) {
+        state.activate(); // Horizontal movement is prioritized
+      } else if (dy > TOUCH_SLOP) {
+        state.fail(); // Fail gesture if vertical movement exceeds threshold
+      }
+    })
+    .onUpdate((event) => {
+      translateX.value = event.translationX;
+    })
+    .onEnd(({ velocityX }) => {
       if (Math.abs(velocityX) < SWIPE_VELOCITY) {
         translateX.value = withSpring(0);
-
         return;
       }
 
@@ -69,8 +87,7 @@ function Stack<T>({
         {},
         () => runOnJS(setCurrentIndex)(currentIndex + 1)
       );
-    },
-  });
+    });
 
   const rotate = useDerivedValue(
     () =>
@@ -84,9 +101,7 @@ function Stack<T>({
   const currentItemAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       { translateX: translateX.value },
-      {
-        rotate: rotate.value,
-      },
+      { rotate: rotate.value },
     ],
   }));
 
@@ -123,11 +138,11 @@ function Stack<T>({
         )}
       </View>
       {currentItem && (
-        <PanGestureHandler onGestureEvent={gestureHandler}>
+        <GestureDetector gesture={gesture}>
           <Animated.View style={currentItemAnimatedStyle}>
             {renderItem(currentItem, currentIndex)}
           </Animated.View>
-        </PanGestureHandler>
+        </GestureDetector>
       )}
     </View>
   );
