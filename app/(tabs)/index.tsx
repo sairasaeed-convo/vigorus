@@ -109,8 +109,8 @@ export default function HomeScreen() {
           // setModalVisible(true)
           // if (asset.uri) {
             router.navigate({
-              pathname: "/[predict_image_uri]",
-              params: { predict_image_uri: "asset.uri" }, // Pass the saved asset URI
+              pathname: "/crop/[crop_image]",
+              params: { crop_image: "asset.uri" }, // Pass the saved asset URI
             });
           // }
         }

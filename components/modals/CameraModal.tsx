@@ -190,7 +190,7 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
           // Navigate to the other screen with the saved URI
           if (asset.uri) {
             router.navigate({
-              pathname: "/[predict_image_uri]",
+              pathname: "/predict/[predict_image_uri]",
               params: { predict_image_uri: asset.uri }, // Pass the saved asset URI
             });
           }
@@ -221,8 +221,15 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      setFullScreenImage(result.assets[0].uri);
+      console.log("Crop Uri:", result.assets[0].uri); // Check the URI being passed
+      const encodedUri = encodeURIComponent(result.assets[0].uri); // Encode the URI
+      console.log("Encoded Crop Uri:", encodedUri); // Check the encoded URI
+  
+      router.navigate({
+        pathname: "/crop/[crop_image]",
+        params: { crop_image: encodedUri},
+      });
+  
     }
   };
 
