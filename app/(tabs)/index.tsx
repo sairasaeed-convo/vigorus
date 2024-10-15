@@ -106,13 +106,7 @@ export default function HomeScreen() {
       <TouchableOpacity
         style={styles.header}
         onPress={() => {
-          // setModalVisible(true)
-          // if (asset.uri) {
-            router.navigate({
-              pathname: "/crop/[crop_image]",
-              params: { crop_image: "asset.uri" }, // Pass the saved asset URI
-            });
-          // }
+          setModalVisible(true)
         }
         }
       >
