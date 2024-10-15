@@ -106,6 +106,7 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
       // 5. Set the image URI
       setImage(savedUri);
 
+      console.log("saved uri ", savedUri);
       return savedUri; // Return the saved URI
     } catch (error) {
       console.error("Failed to capture and save screenshot:", error);
@@ -179,22 +180,22 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
   const handleUsePhoto = async () => {
     if (image) {
       try {
-        const { status } = await MediaLibrary.requestPermissionsAsync();
-        if (status === "granted") {
-          await MediaLibrary.saveToLibraryAsync(image); // Save image
-          const asset = await MediaLibrary.createAssetAsync(image);
+        // const { status } = await MediaLibrary.requestPermissionsAsync();
+        // if (status === "granted") {
+        //   await MediaLibrary.saveToLibraryAsync(image); // Save image
+        //   const asset = await MediaLibrary.createAssetAsync(image);
 
-          console.log("Image successfully saved:", asset);
+        //   console.log("Image successfully saved:", asset);
 
-          if (asset.uri) {
+          // if (asset.uri) {
             router.push({
               pathname: "/predict/[predict_image_uri]",
-              params: { predict_image_uri: asset.uri },
+              params: { predict_image_uri: image},
             });
-          }
-        } else {
-          alert("Permission to access media library is required.");
-        }
+          // }
+        // } else {
+        //   alert("Permission to access media library is required.");
+        // }
       } catch (error) {
         console.error("Error saving image:", error);
       }

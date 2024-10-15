@@ -455,6 +455,7 @@ const styles = StyleSheet.create({
     borderWidth: 5,
     borderColor: "transparent",
     borderRadius: 16,
+    backgroundColor:"teal",
     alignSelf: "center",
   },
   imageStyle: {
