@@ -179,19 +179,17 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
   const handleUsePhoto = async () => {
     if (image) {
       try {
-        // Request permission and save the image
         const { status } = await MediaLibrary.requestPermissionsAsync();
         if (status === "granted") {
           await MediaLibrary.saveToLibraryAsync(image); // Save image
           const asset = await MediaLibrary.createAssetAsync(image);
 
-          console.log("Image successfully saved:", asset); // Log saved image details
+          console.log("Image successfully saved:", asset);
 
-          // Navigate to the other screen with the saved URI
           if (asset.uri) {
-            router.navigate({
+            router.push({
               pathname: "/predict/[predict_image_uri]",
-              params: { predict_image_uri: asset.uri }, // Pass the saved asset URI
+              params: { predict_image_uri: asset.uri },
             });
           }
         } else {
@@ -223,7 +221,6 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
       const encodedUri = encodeURIComponent(imageUri);
-      // Pass the encoded URI in the navigation
       router.push({
         pathname: "/crop/[crop_image]",
         params: { crop_image: encodedUri },

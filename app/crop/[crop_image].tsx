@@ -56,11 +56,9 @@ export default function CropGalleryImage() {
   const { crop_image } = useGlobalSearchParams();
 
   const [imageUri, setImageUri] = useState<string | undefined>(undefined);
-  const [imageExists, setImageExists] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof crop_image === "string") {
-      console.log("Manually :", crop_image);
       handleImageLoad(crop_image);
     } else {
       console.error("Unexpected type for crop_image:", typeof crop_image);
@@ -69,19 +67,15 @@ export default function CropGalleryImage() {
 
   const handleImageLoad = async (uri: string) => {
     const exists = await checkImageExists(uri);
-    console.log("Crop Image exists:", exists);
     if (exists) {
       setImageUri(uri);
-      setImageExists(true);
     }
   };
 
   async function checkImageExists(imageUri: string): Promise<boolean> {
     try {
-      console.log("Checking image existence for URI:", imageUri);
 
       const fileExists = await FileSystem.getInfoAsync(imageUri);
-      console.log("File exists:", fileExists.exists);
       return fileExists.exists;
     } catch (error) {
       console.error("Error checking file existence:", error);
@@ -102,15 +96,26 @@ export default function CropGalleryImage() {
   };
 
   const handleCancel = () => {
-    router.canGoBack();
+    router.back();
+  };
+
+  const standardizeUri = (uri: string) => {
+    return uri.replace(/%2540/g, "%40").replace(/%252F/g, "%2F");
+  };
+
+  const decodeUriForFileSystem = (uri: string) => {
+    return uri.replace(/%40/g, "%2540").replace(/%2F/g, "%252F");
   };
 
   const handleUsePhoto = async () => {
     if (imageUri) {
+
       router.push({
         pathname: "/predict/[predict_image_uri]",
-        params: { predict_image_uri: imageUri }, // Pass the saved asset URI
+        params: { predict_image_uri: imageUri},
       });
+    } else {
+      console.error("No imageUri available to pass.");
     }
   };
 
@@ -246,7 +251,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: 47,
     marginVertical: 12,
-    marginTop: "auto", // Adjust spacing if necessary
+    marginTop: "auto",
   },
   instructionsContainer: {
     flexDirection: "row",
@@ -269,8 +274,8 @@ const styles = StyleSheet.create({
   frameAndZoomContainer: {
     flexGrow: 1,
     flexDirection: "column",
-    justifyContent: "center", // Center items vertically
-    alignItems: "center", // Center items horizontally
+    justifyContent: "center",
+    alignItems: "center",
     alignSelf: "center",
   },
   overlay: {
@@ -278,10 +283,9 @@ const styles = StyleSheet.create({
     borderColor: "white",
     borderRadius: 12,
     overflow: "hidden",
-    justifyContent: "center", // Center children vertically
-    alignItems: "center", // Center children horizontally
-    // Optionally, add these to ensure it's centered:
-    position: "relative", // Positioning if needed
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
     marginBottom: "auto",
   },
   overlayScreenShot: {

@@ -60,13 +60,53 @@ const cards: Card[] = [
 ];
 
 export default function AnalyzeImage() {
-  const { predict_image_uri } = useGlobalSearchParams();
-  const [imageUri, setImageUri] = useState<string | undefined>(undefined);
-  const [imageExists, setImageExists] = useState<boolean>(false);
   const [selectedTab, setSelectedTab] = useState("Self Evaluation");
-  const [characteristicsTab, setSelectedCharacteristicsTab] = useState("No");
+
+  const [assymetryTab, setAssymetryTab] = useState("No");
+  const [irregularBordersTab, setIrregularBordersTab] = useState("No");
+  const [variedColorsTab, setVariedColorsTab] = useState("No");
+  const [diameterLargerThan6Tab, setDiameterLargerThan6Tab] = useState("No");
+
   const [riskPriority, setRiskPriorityTab] = useState("Low");
   const [exampleLesion, setExampleLesionTab] = useState("Not Concerning");
+
+  const { predict_image_uri } = useGlobalSearchParams();
+
+  const [imageUri, setImageUri] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    handleImageLoad();
+  }, [predict_image_uri]);
+
+  const standardizeUri = (uri: string) => {
+    return uri.replace(/%2540/g, "%40").replace(/%252F/g, "%2F");
+  };
+
+  const decodeUriForFileSystem = (uri: string) => {
+    return uri.replace(/%40/g, "%2540").replace(/%2F/g, "%252F");
+  };
+
+  async function checkImageExists(imageUri: string): Promise<boolean> {
+    try {
+      const fileExists = await FileSystem.getInfoAsync(imageUri);
+      return fileExists.exists;
+    } catch (error) {
+      console.error("Error checking file existence:", error);
+      return false;
+    }
+  }
+
+  const handleImageLoad = async () => {
+    if (typeof predict_image_uri === "string") {
+      const decodedUri = decodeUriForFileSystem(predict_image_uri);
+      const exists = await checkImageExists(decodedUri);
+
+      if (exists) {
+        console.log("Image does exist:", decodedUri);
+        setImageUri(decodedUri);
+      }
+    }
+  };
 
   const renderItem = useCallback((item: any) => <CardItem card={item} />, []);
 
@@ -78,32 +118,11 @@ export default function AnalyzeImage() {
     NonNullable<StackProps<Card>["onSwipeLeft"]>
   >((item) => {}, []);
 
-  useEffect(() => {
-    handleImageLoad();
-  }, [predict_image_uri]);
-
-  async function checkImageExists(imageUri: string): Promise<boolean> {
-    const fileExists = await FileSystem.getInfoAsync(imageUri);
-    return fileExists.exists;
-  }
-
   const handlePress = () => {
     const url = "https://www.google.com"; // Replace with your desired URL
     Linking.openURL(url).catch((err) =>
       console.error("An error occurred", err)
     );
-  };
-
-  const handleImageLoad = async () => {
-    if (typeof predict_image_uri === "string") {
-      const exists = await checkImageExists(predict_image_uri);
-      if (exists) {
-        setImageUri(predict_image_uri);
-        setImageExists(true);
-      } else {
-        setImageExists(false);
-      }
-    }
   };
 
   const insets = useSafeAreaInsets();
@@ -145,13 +164,26 @@ export default function AnalyzeImage() {
           {/* Image Row */}
           <View style={styles.imageShowRow}>
             <View style={[styles.overlay, { width: 200, height: 200 }]}>
-              <Image
-                source={{ uri: imageUri }}
-                resizeMode="cover"
-                onError={(error) =>
-                  console.log("Image failed to load:", error.nativeEvent.error)
-                }
-              />
+              {imageUri ? (
+                <Image
+                  source={{ uri: imageUri }}
+                  resizeMode="cover"
+                  style={styles.imageStyle}
+                  onError={(error) => {
+                    console.error(
+                      "Error loading image:",
+                      error.nativeEvent.error
+                    );
+                  }}
+                />
+              ) : (
+                <Image
+                  source={{
+                    uri: "https://example.com/placeholder-image.jpg",
+                  }}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              )}
             </View>
             <Pressable style={styles.closeIcon} onPress={router.back}>
               <Ionicons
@@ -216,9 +248,9 @@ export default function AnalyzeImage() {
                         key={tab}
                         style={[
                           styles.cardTab,
-                          characteristicsTab === tab && styles.selectedTab,
+                          assymetryTab === tab && styles.selectedTab,
                         ]}
-                        onPress={() => setSelectedCharacteristicsTab(tab)}
+                        onPress={() => setAssymetryTab(tab)}
                       >
                         <ThemedText style={styles.tabText}>{tab}</ThemedText>
                       </Pressable>
@@ -240,9 +272,9 @@ export default function AnalyzeImage() {
                         key={tab}
                         style={[
                           styles.cardTab,
-                          characteristicsTab === tab && styles.selectedTab,
+                          irregularBordersTab === tab && styles.selectedTab,
                         ]}
-                        onPress={() => setSelectedCharacteristicsTab(tab)}
+                        onPress={() => setIrregularBordersTab(tab)}
                       >
                         <ThemedText style={styles.tabText}>{tab}</ThemedText>
                       </Pressable>
@@ -263,9 +295,9 @@ export default function AnalyzeImage() {
                         key={tab}
                         style={[
                           styles.cardTab,
-                          characteristicsTab === tab && styles.selectedTab,
+                          variedColorsTab === tab && styles.selectedTab,
                         ]}
-                        onPress={() => setSelectedCharacteristicsTab(tab)}
+                        onPress={() => setVariedColorsTab(tab)}
                       >
                         <ThemedText style={styles.tabText}>{tab}</ThemedText>
                       </Pressable>
@@ -287,9 +319,9 @@ export default function AnalyzeImage() {
                         key={tab}
                         style={[
                           styles.cardTab,
-                          characteristicsTab === tab && styles.selectedTab,
+                          diameterLargerThan6Tab === tab && styles.selectedTab,
                         ]}
-                        onPress={() => setSelectedCharacteristicsTab(tab)}
+                        onPress={() => setDiameterLargerThan6Tab(tab)}
                       >
                         <ThemedText style={styles.tabText}>{tab}</ThemedText>
                       </Pressable>
@@ -424,7 +456,11 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
     borderRadius: 16,
     alignSelf: "center",
-    backgroundColor: "#197E8D",
+  },
+  imageStyle: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12, // This applies the border radius to the image
   },
   sectionTitle: {
     padding: 12,
@@ -546,7 +582,7 @@ const styles = StyleSheet.create({
   riskAssesmentContent: {
     alignSelf: "center",
     marginVertical: 12,
-    marginHorizontal:12,
+    marginHorizontal: 12,
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
