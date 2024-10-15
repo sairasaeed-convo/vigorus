@@ -13,6 +13,7 @@ import {
   PixelRatio,
   ActivityIndicator,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -100,8 +101,19 @@ export default function HomeScreen() {
     return <Text style={styles.sectionSubtitle}>Nothing Scanned yet!</Text>;
   };
 
+  const insets = useSafeAreaInsets();
   return (
-    <SafeAreaView style={styles.container}>
+    <View
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingBottom: insets.bottom,
+        paddingRight: insets.right,
+        flexDirection: "column",
+        flex: 1, // Make sure the container expands
+      }}
+    >
+    <View style={styles.container}>
       {/* Header */}
       <TouchableOpacity
         style={styles.header}
@@ -266,14 +278,15 @@ export default function HomeScreen() {
         visible={caemraModalVisible}
         onClose={() => setCameraModalVisible(false)}
       />
-    </SafeAreaView>
+    </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 52,
+    paddingTop: 24,
     backgroundColor: "#fff",
   },
   header: {
