@@ -17,14 +17,13 @@ import { useRouter } from "expo-router";
 import NotFoundScreen from "../+not-found";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function SkinCheckScreen({ navigation }: any) {
+export default function SkinCheckScreen() {
   const router = useRouter();
   const handleStartCheck = () => {
     router.navigate("../+not-found");
   };
 
   const handleBodyPartPress = (bodyPart: BodyParts) => {
-    // Handle body part click here
     console.log("Clicked body part:", bodyPart.name);
   };
 
@@ -48,7 +47,7 @@ export default function SkinCheckScreen({ navigation }: any) {
         paddingBottom: insets.bottom,
         paddingRight: insets.right,
         flexDirection: "column",
-        flex: 1, // Make sure the container expands
+        flex: 1,
       }}
     >
       <View style={styles.container}>
