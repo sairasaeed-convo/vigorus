@@ -107,13 +107,13 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 24,
     fontWeight: "normal",
-    color: "teal",
+    color: "#067783",
   },
   saveText: {
-    color: "skyblue",
+    color: "#1F7EDC",
     fontSize: 16,
     marginHorizontal: 18,
-    fontWeight: "normal",
+    fontWeight: "medium",
   },
   sectionTitle: {
     padding: 12,
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 24,
     fontSize: 18,
     fontWeight: "bold",
-    color: "black",
+    color: "#090909",
   },
   sectionSubtitle: {
     color: "gray",
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 0,
     fontSize: 14,
     fontWeight: "medium",
-    color: "teal",
+    color: "#067783",
     alignSelf: "center",
   },
 
@@ -183,16 +183,16 @@ const styles = StyleSheet.create({
     },
   },
   logOutButton: {
-    color: "skyblue",
-    fontSize: 13,
+    color: "#1F7EDC",
+    fontSize: 14,
     marginHorizontal: 18,
     fontWeight: "bold",
     left: "45%",
     paddingVertical: 8,
   },
   deleteAccountButton: {
-    color: "red",
-    fontSize: 13,
+    color: "#E64C59",
+    fontSize: 14,
     opacity: 0.6,
     marginHorizontal: 18,
     fontWeight: "bold",
