@@ -37,6 +37,7 @@ import CommonFloatingButton from "../common/CommonFloatingButton";
 import { ZOOM_TYPE, Zoomable } from "@likashefqet/react-native-image-zoom";
 import OnboardingViewPagerModal from "../common/OnboardingViewPagerModal";
 import { useRouter } from "expo-router";
+import { OnCameraBoardingData } from "@/interface/OnBoardingVPData";
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
@@ -187,12 +188,12 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
 
         //   console.log("Image successfully saved:", asset);
 
-          // if (asset.uri) {
-            router.push({
-              pathname: "/predict/[predict_image_uri]",
-              params: { predict_image_uri: image},
-            });
-          // }
+        // if (asset.uri) {
+        router.push({
+          pathname: "/predict/[predict_image_uri]",
+          params: { predict_image_uri: image },
+        });
+        // }
         // } else {
         //   alert("Permission to access media library is required.");
         // }
@@ -241,6 +242,7 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
           <OnboardingViewPagerModal
             visible={modalVisible}
             onClose={() => setModalVisible(false)}
+            data={OnCameraBoardingData}
           />
         )}
 

@@ -13,30 +13,12 @@ import {
   Animated,
   Pressable,
 } from "react-native";
-
-interface OnboardingViewPagerModalProps {
-  visible: boolean;
-  onClose: () => void;
-}
-
-const OnBoardingData = [
-  {
-    title: "Hold your phone perpendicular to the mole",
-    image: require("@/assets/images/react-logo.png"),
-  },
-  {
-    title: "Have only skin be visible in the square view",
-    image: require("@/assets/images/react-logo.png"),
-  },
-  {
-    title: "Focus the camera clearly on the mole",
-    image: require("@/assets/images/react-logo.png"),
-  },
-];
+import { OnboardingViewPagerModalProps } from "@/interface/OnBoardingVPData";
 
 const OnboardingViewPagerModal = ({
   visible,
   onClose,
+  data,
 }: OnboardingViewPagerModalProps) => {
   const [isModalVisible, setModalVisible] = useState(visible);
   const [currentPage, setCurrentPage] = useState(0);
@@ -67,19 +49,17 @@ const OnboardingViewPagerModal = ({
           verticalMovement > threshold && verticalMovement > horizontalMovement
         );
       },
-      onPanResponderMove: Animated.event(
-        [null, { dy: pan.y }], // Only track dy
-        { useNativeDriver: false }
-      ),
+      onPanResponderMove: Animated.event([null, { dy: pan.y }], {
+        useNativeDriver: false,
+      }),
       onPanResponderRelease: (e, gestureState) => {
         if (gestureState.dy > 50) {
-          // If the drag is greater than 100, dismiss the modal
           Animated.timing(pan, {
-            toValue: { x: 0, y: 1000 }, // Move the modal off the screen
+            toValue: { x: 0, y: 1000 },
             duration: 300,
             useNativeDriver: true,
           }).start(() => {
-            onClose(); // Call the onClose prop to dismiss the modal
+            onClose();
           });
         } else {
           Animated.spring(pan, {
@@ -135,7 +115,7 @@ const OnboardingViewPagerModal = ({
           index={0}
           showPagination={true}
           paginationActiveColor="black"
-          data={OnBoardingData}
+          data={data}
           renderItem={({ item, index }) => (
             <View key={index} style={styles.page}>
               <Text style={styles.title}>{item.title}</Text>

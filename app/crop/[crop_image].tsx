@@ -39,6 +39,8 @@ import { StatusBar } from "expo-status-bar";
 import { ZOOM_TYPE, Zoomable } from "@likashefqet/react-native-image-zoom";
 import { useRouter } from "expo-router";
 import { AnimatedImage } from "react-native-reanimated/lib/typescript/reanimated2/component/Image";
+import OnboardingViewPagerModal from "@/components/common/OnboardingViewPagerModal";
+import { OnGalleryCropBoardingData } from "@/interface/OnBoardingVPData";
 
 const { width, height } = Dimensions.get("window");
 
@@ -57,6 +59,8 @@ export default function CropGalleryImage() {
 
   const [imageUri, setImageUri] = useState<string | undefined>(undefined);
 
+  const [modalVisible, setModalVisible] = useState(true);
+
   useEffect(() => {
     if (typeof crop_image === "string") {
       handleImageLoad(crop_image);
@@ -74,7 +78,6 @@ export default function CropGalleryImage() {
 
   async function checkImageExists(imageUri: string): Promise<boolean> {
     try {
-
       const fileExists = await FileSystem.getInfoAsync(imageUri);
       return fileExists.exists;
     } catch (error) {
@@ -109,10 +112,9 @@ export default function CropGalleryImage() {
 
   const handleUsePhoto = async () => {
     if (imageUri) {
-
       router.push({
         pathname: "/predict/[predict_image_uri]",
-        params: { predict_image_uri: imageUri},
+        params: { predict_image_uri: imageUri },
       });
     } else {
       console.error("No imageUri available to pass.");
@@ -145,6 +147,13 @@ export default function CropGalleryImage() {
           style={styles.fullScreenImage}
           resizeMode="cover"
         />
+
+        <OnboardingViewPagerModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          data={OnGalleryCropBoardingData}
+        />
+
         <View style={styles.container}>
           <ThemedText style={styles.headerText}>Crop Image</ThemedText>
 
