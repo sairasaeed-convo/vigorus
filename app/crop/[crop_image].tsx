@@ -53,7 +53,6 @@ export default function CropGalleryImage() {
 
   const cameraRef = useRef<CameraView>(null);
   const [fullScreenIimage, setFullScreenImage] = useState<string | null>(null);
-
   const { crop_image } = useGlobalSearchParams();
 
   const [imageUri, setImageUri] = useState<string | undefined>(undefined);
@@ -61,33 +60,28 @@ export default function CropGalleryImage() {
 
   useEffect(() => {
     if (typeof crop_image === "string") {
-      console.log("Decoded Crop Image URI:", crop_image); // Log the decoded URI
-      handleImageLoad(
-        "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Fvigorus-80ed6603-c1af-4f96-b958-ddcc1fc2d8cf/ImagePicker/f3e3b137-3cc7-488d-a8b0-7cb96d45faf0.jpeg"
-      );
+      console.log("Manually :", crop_image);
+      handleImageLoad(crop_image);
     } else {
       console.error("Unexpected type for crop_image:", typeof crop_image);
     }
   }, [crop_image]);
 
-  const handleImageLoad = async (decodedUri: string) => {
-    const exists = await checkImageExists(decodedUri);
+  const handleImageLoad = async (uri: string) => {
+    const exists = await checkImageExists(uri);
     console.log("Crop Image exists:", exists);
     if (exists) {
-      setImageUri(decodedUri); // Set the imageUri from the decoded parameter
+      setImageUri(uri);
       setImageExists(true);
-    } else {
-      setImageExists(false);
     }
   };
 
   async function checkImageExists(imageUri: string): Promise<boolean> {
     try {
-      // Log the image URI being checked
       console.log("Checking image existence for URI:", imageUri);
 
       const fileExists = await FileSystem.getInfoAsync(imageUri);
-      console.log("File exists:", fileExists.exists); // Log whether it exists
+      console.log("File exists:", fileExists.exists);
       return fileExists.exists;
     } catch (error) {
       console.error("Error checking file existence:", error);

@@ -221,15 +221,13 @@ const CameraModal = ({ visible, onClose }: CameraModalProps) => {
     });
 
     if (!result.canceled) {
-      console.log("Crop Uri:", result.assets[0].uri); // Check the URI being passed
-      const encodedUri = encodeURIComponent(result.assets[0].uri); // Encode the URI
-      console.log("Encoded Crop Uri:", encodedUri); // Check the encoded URI
-  
-      router.navigate({
+      const imageUri = result.assets[0].uri;
+      const encodedUri = encodeURIComponent(imageUri);
+      // Pass the encoded URI in the navigation
+      router.push({
         pathname: "/crop/[crop_image]",
-        params: { crop_image: encodedUri},
+        params: { crop_image: encodedUri },
       });
-  
     }
   };
 
