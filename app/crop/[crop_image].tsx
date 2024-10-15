@@ -39,7 +39,7 @@ import { StatusBar } from "expo-status-bar";
 import { ZOOM_TYPE, Zoomable } from "@likashefqet/react-native-image-zoom";
 import { useRouter } from "expo-router";
 import { AnimatedImage } from "react-native-reanimated/lib/typescript/reanimated2/component/Image";
-import OnboardingViewPagerModal from "@/components/common/OnboardingViewPagerModal";
+import OnboardingViewPagerModal from "@/components/modals/OnboardingViewPagerModal";
 import { OnGalleryCropBoardingData } from "@/interface/OnBoardingVPData";
 
 const { width, height } = Dimensions.get("window");
@@ -64,8 +64,6 @@ export default function CropGalleryImage() {
   useEffect(() => {
     if (typeof crop_image === "string") {
       handleImageLoad(crop_image);
-    } else {
-      console.error("Unexpected type for crop_image:", typeof crop_image);
     }
   }, [crop_image]);
 

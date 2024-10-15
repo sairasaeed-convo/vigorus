@@ -25,6 +25,7 @@ import { Card } from "@/types/Card";
 import CardItem from "@/components/CardItem";
 import Stack, { StackProps } from "@/components/Stack";
 import { Linking } from "react-native";
+import SkinColorSelectionModal from "@/components/modals/SkinColorSelectionModal";
 
 //       <Link href="/" style={styles.link}>
 {
@@ -59,6 +60,15 @@ const cards: Card[] = [
   },
 ];
 
+const skinColorsList = [
+  "#F4D0B0",
+  "#E8B48F",
+  "#D3A87D",
+  "#BB7750",
+  "#A35D2A",
+  "#3C201D",
+];
+
 export default function AnalyzeImage() {
   const [selectedTab, setSelectedTab] = useState("Self Evaluation");
 
@@ -69,6 +79,17 @@ export default function AnalyzeImage() {
 
   const [riskPriority, setRiskPriorityTab] = useState("Low");
   const [exampleLesion, setExampleLesionTab] = useState("Not Concerning");
+
+  const [modalVisible, setModalVisible] = useState(true);
+  const [selectedColor, setSelectedColor] = useState<string>(skinColorsList[0]);
+
+  useEffect(() => {
+    setModalVisible(modalVisible);
+  }, [modalVisible]);
+
+  useEffect(() => {
+    setSelectedColor(skinColorsList[0]);
+  }, [skinColorsList]);
 
   const { predict_image_uri } = useGlobalSearchParams();
 
@@ -119,7 +140,7 @@ export default function AnalyzeImage() {
   >((item) => {}, []);
 
   const handlePress = () => {
-    const url = "https://www.google.com"; // Replace with your desired URL
+    const url = "https://www.google.com";
     Linking.openURL(url).catch((err) =>
       console.error("An error occurred", err)
     );
@@ -136,9 +157,18 @@ export default function AnalyzeImage() {
           paddingBottom: insets.bottom,
           paddingRight: insets.right,
           flexDirection: "column",
-          flex: 1, // Make sure the container expands
+          flex: 1,
         }}
       >
+        <SkinColorSelectionModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          colors={skinColorsList}
+          selectedColorCode={(colorCode: string) => {
+            setSelectedColor(colorCode); // Update the state with the selected color
+            setModalVisible(false); // Close the modal after selection
+          }}
+        />
         <View
           style={{
             backgroundColor: "white",
@@ -185,11 +215,14 @@ export default function AnalyzeImage() {
                 />
               )}
             </View>
-            <Pressable style={styles.closeIcon} onPress={router.back}>
+            <Pressable
+              style={styles.closeIcon}
+              onPress={() => setModalVisible(true)}
+            >
               <Ionicons
                 name="warning"
                 size={42}
-                color="#1B1B1F"
+                color={selectedColor}
                 style={{ padding: 18 }}
               />
             </Pressable>
@@ -455,7 +488,7 @@ const styles = StyleSheet.create({
     borderWidth: 5,
     borderColor: "transparent",
     borderRadius: 16,
-    backgroundColor:"teal",
+    backgroundColor: "teal",
     alignSelf: "center",
   },
   imageStyle: {

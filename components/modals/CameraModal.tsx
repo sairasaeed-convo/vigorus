@@ -35,7 +35,7 @@ import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
 import CommonFloatingButton from "../common/CommonFloatingButton";
 import { ZOOM_TYPE, Zoomable } from "@likashefqet/react-native-image-zoom";
-import OnboardingViewPagerModal from "../common/OnboardingViewPagerModal";
+import OnboardingViewPagerModal from "./OnboardingViewPagerModal";
 import { useRouter } from "expo-router";
 import { OnCameraBoardingData } from "@/interface/OnBoardingVPData";
 
