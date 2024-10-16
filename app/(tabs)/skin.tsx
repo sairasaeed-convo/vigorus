@@ -13,17 +13,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { ThemedText } from "@/components/ThemedText";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BodyParts, bodyPartsData } from "@/interface/BodyParts";
+import { useRouter } from "expo-router";
+import NotFoundScreen from "../+not-found";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function SkinCheckScreen({ navigation }: any) {
+export default function SkinCheckScreen() {
+  const router = useRouter();
   const handleStartCheck = () => {
-    // navigation.navigate("StartSkinCheck");
-    //  fff
+    router.navigate("../+not-found");
   };
 
   const handleBodyPartPress = (bodyPart: BodyParts) => {
-    // Handle body part click here
     console.log("Clicked body part:", bodyPart.name);
-    // Add your logic for actions based on the clicked body part
   };
 
   const [selectedTab, setSelectedTab] = useState("Full Body");
@@ -37,72 +38,93 @@ export default function SkinCheckScreen({ navigation }: any) {
       return bodyPartsData;
     }
   };
-
+  const insets = useSafeAreaInsets();
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedText style={styles.sectionTopbarTitle}>
-        Take a skin check
-      </ThemedText>
+    <View
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingBottom: insets.bottom,
+        paddingRight: insets.right,
+        flexDirection: "column",
+        flex: 1,
+      }}
+    >
+      <View style={styles.container}>
+        <ThemedText style={styles.sectionTopbarTitle}>
+          Take a skin check
+        </ThemedText>
 
-      {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        {["Full Body", "Upper Body", "Lower Body"].map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.tab, selectedTab === tab && styles.selectedTab]}
-            onPress={() => setSelectedTab(tab)}
-          >
-            <ThemedText style={styles.tabText}>{tab}</ThemedText>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Spacer */}
-      <View style={{ height: 18 }} />
-
-      <ScrollView>
-        <View style={styles.flexRow}>
-          <View
-            style={[
-              styles.verticalLine,
-              { height: filteredBodyParts().length * 70 }, // Adjust the multiplier as needed
-            ]}
-          >
-            {filteredBodyParts().map((_, index) => (
-              <View key={index} style={styles.dot} />
-            ))}
-          </View>
-          <FlatList
-            data={filteredBodyParts()}
-            keyExtractor={(item) => item.name}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.bodyPart}
-                onPress={() => handleBodyPartPress(item)}
-              >
-                <Image
-                  source={{ uri: item.image }}
-                  style={{ width: 40, height: 40, marginRight: 8 }}
-                />
-                <ThemedText style={styles.bodyPartText}>{item.name}</ThemedText>
-              </TouchableOpacity>
-            )}
-          />
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          {["Full Body", "Upper Body", "Lower Body"].map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              style={[styles.tab, selectedTab === tab && styles.selectedTab]}
+              onPress={() => setSelectedTab(tab)}
+            >
+              <ThemedText style={styles.tabText}>{tab}</ThemedText>
+            </TouchableOpacity>
+          ))}
         </View>
-      </ScrollView>
-      <TouchableOpacity style={styles.startButton} onPress={handleStartCheck}>
-        <Ionicons name="play-outline" size={24} color="#fff" />
-        <Text style={styles.startButtonText}>Start SkinCheck</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+
+        {/* Spacer */}
+        <View style={{ height: 18 }} />
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+        >
+          <View style={styles.flexRow}>
+            <View
+              style={[
+                styles.verticalLine,
+                { height: filteredBodyParts().length * 70 },
+              ]}
+            >
+              {filteredBodyParts().map((_, index) => (
+                <View key={index} style={styles.dot} />
+              ))}
+            </View>
+            <FlatList
+              data={filteredBodyParts()}
+              keyExtractor={(item) => item.name}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.bodyPart}
+                  onPress={() => handleBodyPartPress(item)}
+                >
+                  <Image
+                    source={{ uri: item.image }}
+                    style={{
+                      width: 50,
+                      height: 50,
+                      marginEnd: 8,
+                      marginStart: 10,
+                    }}
+                  />
+                  <ThemedText style={styles.bodyPartText}>
+                    {item.name}
+                  </ThemedText>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </ScrollView>
+
+        <TouchableOpacity style={styles.startButton} onPress={handleStartCheck}>
+          <Ionicons name="play-outline" size={24} color="#fff" />
+          <Text style={styles.startButtonText}>Start SkinCheck</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingVertical: 24,
-    paddingHorizontal: 12,
+    padding: 12,
     backgroundColor: "white",
   },
   tabsContainer: {
@@ -163,6 +185,7 @@ const styles = StyleSheet.create({
   },
   bodyPart: {
     height: 69,
+    paddingStart: 12,
     flexDirection: "row",
     alignItems: "center",
   },

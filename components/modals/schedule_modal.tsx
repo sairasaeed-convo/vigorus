@@ -95,7 +95,7 @@ const ScheduleModal = ({ visible, onClose }: ScheduleModalProps) => {
   };
 
   return (
-    <Modal animationType="slide" transparent={true} visible={visible}>
+    <Modal animationType="slide" transparent={true} visible={visible}  onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <View style={{ flexGrow: 1 }}>
           <ScrollView>
@@ -242,7 +242,7 @@ const ScheduleModal = ({ visible, onClose }: ScheduleModalProps) => {
                         opacity: 0.7,
                       }}
                     ></View>
-                      <View style={{ height: 18 }} />
+                    <View style={{ height: 18 }} />
                     <ThemedText style={styles.sectionTitleNoMargin}>
                       Which Day?
                     </ThemedText>
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 18,
     fontWeight: "normal",
-    color: "black",
+    color: "teal",
   },
   saveText: {
     color: "gray",

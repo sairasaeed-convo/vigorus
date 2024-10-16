@@ -13,6 +13,7 @@ import {
   PixelRatio,
   ActivityIndicator,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -21,6 +22,9 @@ import {
   getScannedDataFromDataBase,
 } from "@/database/database";
 import { LOCAL_DB, ScannedData } from "@/interface/ScannedData";
+import ProfileScreenModal from "@/components/modals/ProfileScreenModal";
+import CameraModal from "@/components/modals/CameraModal";
+import { router } from "expo-router";
 
 const BodyParts = [
   { name: "Head", info: "Info", type: "UpperBody" },
@@ -42,23 +46,30 @@ const BodyParts = [
   { name: "Lower Back", info: "Info", type: "LowerBody" },
 ];
 
-// Function to get image URL based on body part name
 const getImageUrlForBodyPart = (bodyPartName: String) => {
-  // Implement your logic to map body part names to image URLs
-  // Example:
   if (bodyPartName === "Left Lower Leg") {
     return "https://imgur.com/P0IJ1mD.png";
   } else if (bodyPartName === "Head") {
     return "https://i.imgur.com/W7b2lXE.png";
   }
-  // ... add more mappings for other body parts
-  return "https://i.imgur.com/W7b2lXE.png"; // Default image URL if no mapping found
+  return "https://i.imgur.com/W7b2lXE.png";
 };
 
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function HomeScreen() {
-  const [scannedData, setScannedData] = useState<ScannedData[]>([]); // Initialize with an empty array
+  const handleScanALesionClick = () => {
+    setCameraModalVisible(true);
+  };
+
+  const [scannedData, setScannedData] = useState<ScannedData[]>([]); 
+  const [caemraModalVisible, setCameraModalVisible] = useState(false);
+
+  const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    setModalVisible(modalVisible);
+  }, [modalVisible]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,12 +101,29 @@ export default function HomeScreen() {
     return <Text style={styles.sectionSubtitle}>Nothing Scanned yet!</Text>;
   };
 
+  const insets = useSafeAreaInsets();
   return (
-    <SafeAreaView style={styles.container}>
+    <View
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingBottom: insets.bottom,
+        paddingRight: insets.right,
+        flexDirection: "column",
+        flex: 1, // Make sure the container expands
+      }}
+    >
+    <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <Ionicons name="person-circle-outline" size={28} color="teal" />
-      </View>
+      <TouchableOpacity
+        style={styles.header}
+        onPress={() => {
+          setModalVisible(true)
+        }
+        }
+      >
+        <Ionicons name="person-circle-outline" size={47} color="teal" />
+      </TouchableOpacity>
 
       {/* Body */}
       <ScrollView contentContainerStyle={styles.body}>
@@ -117,7 +145,10 @@ export default function HomeScreen() {
         </View>
         {/* Scan Lesion Button */}
         <View style={{ flex: 1, alignItems: "center" }}>
-          <TouchableOpacity style={styles.scanButton}>
+          <TouchableOpacity
+            style={styles.scanButton}
+            onPress={() => handleScanALesionClick()}
+          >
             <Ionicons name="camera-outline" size={20} color="#fff" />
             <Text style={styles.scanButtonText}>Scan a Lesion</Text>
           </TouchableOpacity>
@@ -236,21 +267,26 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      {/* Bottom Navigation */}
-      {/* <View style={styles.bottomNav}>
-        <Ionicons name="home" size={24} color="teal" />
-        <Ionicons name="list-outline" size={24} color="gray" />
-        <Ionicons name="person-outline" size={24} color="gray" />
-        <Ionicons name="calendar-outline" size={24} color="gray" />
-      </View> */}
-    </SafeAreaView>
+      {/* User Signing account Modal */}
+      <ProfileScreenModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
+
+      {/* User Scan a lesion Modal */}
+      <CameraModal
+        visible={caemraModalVisible}
+        onClose={() => setCameraModalVisible(false)}
+      />
+    </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 32,
+    paddingTop: 24,
     backgroundColor: "#fff",
   },
   header: {
@@ -266,7 +302,7 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   body: {
-    padding: 20,
+    padding: 10,
   },
 
   // Styling related to saved data
